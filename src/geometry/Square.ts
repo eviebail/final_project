@@ -24,8 +24,8 @@ class Square extends Drawable {
 
     this.generateIdx();
     this.generatePos();
-    this.generateCol();
-    this.generateTranslate();
+    // this.generateCol();
+    // this.generateTranslate();
 
     this.count = this.indices.length;
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.bufIdx);
@@ -41,10 +41,10 @@ class Square extends Drawable {
     this.colors = colors;
     this.offsets = offsets;
 
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
-    gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
-    gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTranslate);
-    gl.bufferData(gl.ARRAY_BUFFER, this.offsets, gl.STATIC_DRAW);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, this.bufCol);
+    // gl.bufferData(gl.ARRAY_BUFFER, this.colors, gl.STATIC_DRAW);
+    // gl.bindBuffer(gl.ARRAY_BUFFER, this.bufTranslate);
+    // gl.bufferData(gl.ARRAY_BUFFER, this.offsets, gl.STATIC_DRAW);
   }
 };
 

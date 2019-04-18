@@ -1,4 +1,4 @@
-import {vec3, vec4, mat4, mat3} from 'gl-matrix';
+import {vec2, vec3, vec4, mat4} from 'gl-matrix';
 import Drawable from './Drawable';
 import {gl} from '../../globals';
 
@@ -23,19 +23,23 @@ class ShaderProgram {
 
   attrPos: number;
   attrNor: number;
-  attrCol: number; // This time, it's an instanced rendering attribute, so each particle can have a unique color. Not per-vertex, but per-instance.
-  attrTranslate: number; // Used in the vertex shader during instanced rendering to offset the vertex positions to the particle's drawn position.
-  attrUV: number;
 
-  unifModel: WebGLUniformLocation;
-  unifModelInvTr: WebGLUniformLocation;
-  unifViewProj: WebGLUniformLocation;
-  unifCameraAxes: WebGLUniformLocation;
-  unifTime: WebGLUniformLocation;
   unifRef: WebGLUniformLocation;
   unifEye: WebGLUniformLocation;
   unifUp: WebGLUniformLocation;
   unifDimensions: WebGLUniformLocation;
+  unifTime: WebGLUniformLocation;
+  unifColor: WebGLUniformLocation;
+  unifSize: WebGLUniformLocation;
+
+  unifChar1Pos : WebGLUniformLocation;
+  unifScale : WebGLUniformLocation;
+  unifR1 : WebGLUniformLocation;
+  unifR2 : WebGLUniformLocation;
+  unifR3 : WebGLUniformLocation;
+
+  unifLimb: WebGLUniformLocation;
+  unifJoints: WebGLUniformLocation;
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -49,18 +53,20 @@ class ShaderProgram {
     }
 
     this.attrPos = gl.getAttribLocation(this.prog, "vs_Pos");
-    this.attrNor = gl.getAttribLocation(this.prog, "vs_Nor");
-    this.attrCol = gl.getAttribLocation(this.prog, "vs_Col");
-    this.attrTranslate = gl.getAttribLocation(this.prog, "vs_Translate");
-    this.attrUV = gl.getAttribLocation(this.prog, "vs_UV");
-    this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
-    this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
-    this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
-    this.unifCameraAxes      = gl.getUniformLocation(this.prog, "u_CameraAxes");
-    this.unifTime      = gl.getUniformLocation(this.prog, "u_Time");
     this.unifEye   = gl.getUniformLocation(this.prog, "u_Eye");
     this.unifRef   = gl.getUniformLocation(this.prog, "u_Ref");
     this.unifUp   = gl.getUniformLocation(this.prog, "u_Up");
+    this.unifDimensions   = gl.getUniformLocation(this.prog, "u_Dimensions");
+    this.unifTime   = gl.getUniformLocation(this.prog, "u_Time");
+    this.unifColor   = gl.getUniformLocation(this.prog, "u_Color");
+    this.unifSize   = gl.getUniformLocation(this.prog, "u_Size");
+    this.unifChar1Pos   = gl.getUniformLocation(this.prog, "u_Char1");
+    this.unifScale   = gl.getUniformLocation(this.prog, "u_Scale");
+    this.unifR1   = gl.getUniformLocation(this.prog, "u_R1");
+    this.unifR2   = gl.getUniformLocation(this.prog, "u_R2");
+    this.unifR3   = gl.getUniformLocation(this.prog, "u_R3");
+    this.unifLimb = gl.getUniformLocation(this.prog, "u_LimbInformation");
+    this.unifJoints = gl.getUniformLocation(this.prog, "u_NumJoints");
   }
 
   use() {
@@ -87,43 +93,95 @@ class ShaderProgram {
     this.use();
     if(this.unifDimensions !== -1) {
       gl.uniform2f(this.unifDimensions, width, height);
-    }
-  }
-
-  setModelMatrix(model: mat4) {
-    this.use();
-    if (this.unifModel !== -1) {
-      gl.uniformMatrix4fv(this.unifModel, false, model);
-    }
-
-    if (this.unifModelInvTr !== -1) {
-      let modelinvtr: mat4 = mat4.create();
-      mat4.transpose(modelinvtr, model);
-      mat4.invert(modelinvtr, modelinvtr);
-      gl.uniformMatrix4fv(this.unifModelInvTr, false, modelinvtr);
-    }
-  }
-
-  setViewProjMatrix(vp: mat4) {
-    this.use();
-    if (this.unifViewProj !== -1) {
-      gl.uniformMatrix4fv(this.unifViewProj, false, vp);
-    }
-  }
-
-  setCameraAxes(axes: mat3) {
-    this.use();
-    if (this.unifCameraAxes !== -1) {
-      gl.uniformMatrix3fv(this.unifCameraAxes, false, axes);
+      //gl.uniformMatrix4fv
     }
   }
 
   setTime(t: number) {
     this.use();
-    if (this.unifTime !== -1) {
+    if(this.unifTime !== -1) {
       gl.uniform1f(this.unifTime, t);
     }
   }
+
+  setColorShift(t: number) {
+    this.use();
+    if(this.unifColor !== -1) {
+      gl.uniform1f(this.unifColor, t);
+    }
+  }
+
+  setSizeShift(t: number) {
+    this.use();
+    if(this.unifSize !== -1) {
+      gl.uniform1f(this.unifSize, t);
+    }
+  }
+
+  setChar1Pos(t: vec3) {
+    this.use();
+    if(this.unifChar1Pos !== -1) {
+      gl.uniform3f(this.unifChar1Pos, t[0], t[1], t[2]);
+    }
+  }
+
+  setScale(t: vec3) {
+    this.use();
+    if(this.unifScale !== -1) {
+      gl.uniform3f(this.unifScale, t[0], t[1], t[2]);
+    }
+  }
+
+  setR1(t: vec3) {
+    this.use();
+    if(this.unifR1 !== -1) {
+      gl.uniform3f(this.unifR1, t[0], t[1], t[2]);
+    }
+  }
+
+  setR2(t: vec3) {
+    this.use();
+    if(this.unifR2 !== -1) {
+      gl.uniform3f(this.unifR2, t[0], t[1], t[2]);
+    }
+  }
+
+  setR3(t: vec3) {
+    this.use();
+    if(this.unifR3 !== -1) {
+      gl.uniform3f(this.unifR3, t[0], t[1], t[2]);
+    }
+  }
+
+  setnumJoints(t: number) {
+    this.use();
+    if(this.unifJoints !== -1) {
+      gl.uniform1f(this.unifJoints, t);
+    }
+  }
+
+setLimb(arr : Float32Array) {
+    // let overallMatrices : Array<vec3> = new Array<vec3>(100);
+
+    // for (let id = 0; id < arr.length; id++) {
+    //     overallMatrices[id] = arr[id];
+    // }
+
+    this.use();
+
+    if(this.unifLimb != -1) {
+        // Pass a 4x4 matrix into a uniform variable in our shader
+        // Handle to the matrix variable on the GPU
+        
+        gl.uniform3fv(this.unifLimb,
+                                 // How many matrices to pass
+                                 arr,
+                                 // Transpose the matrix? OpenGL uses column-major, so no.
+                                 0,
+                                 // Pointer to the first element of the matrix
+                                 arr.length);
+    }
+}
 
   draw(d: Drawable) {
     this.use();
@@ -131,54 +189,12 @@ class ShaderProgram {
     if (this.attrPos != -1 && d.bindPos()) {
       gl.enableVertexAttribArray(this.attrPos);
       gl.vertexAttribPointer(this.attrPos, 4, gl.FLOAT, false, 0, 0);
-      gl.vertexAttribDivisor(this.attrPos, 0); // Advance 1 index in pos VBO for each vertex
     }
-
-    if (this.attrNor != -1 && d.bindNor()) {
-      gl.enableVertexAttribArray(this.attrNor);
-      gl.vertexAttribPointer(this.attrNor, 4, gl.FLOAT, false, 0, 0);
-      gl.vertexAttribDivisor(this.attrNor, 0); // Advance 1 index in nor VBO for each vertex
-    }
-
-    if (this.attrCol != -1 && d.bindCol()) {
-      gl.enableVertexAttribArray(this.attrCol);
-      gl.vertexAttribPointer(this.attrCol, 4, gl.FLOAT, false, 0, 0);
-      gl.vertexAttribDivisor(this.attrCol, 1); // Advance 1 index in col VBO for each drawn instance
-    }
-
-    if (this.attrTranslate != -1 && d.bindTranslate()) {
-      gl.enableVertexAttribArray(this.attrTranslate);
-      gl.vertexAttribPointer(this.attrTranslate, 3, gl.FLOAT, false, 0, 0);
-      gl.vertexAttribDivisor(this.attrTranslate, 1); // Advance 1 index in translate VBO for each drawn instance
-    }
-
-    if (this.attrUV != -1 && d.bindUV()) {
-      gl.enableVertexAttribArray(this.attrUV);
-      gl.vertexAttribPointer(this.attrUV, 2, gl.FLOAT, false, 0, 0);
-      gl.vertexAttribDivisor(this.attrUV, 0); // Advance 1 index in pos VBO for each vertex
-    }
-
-    // TODO: Set up attribute data for additional instanced rendering data as needed
 
     d.bindIdx();
-    // drawElementsInstanced uses the vertexAttribDivisor for each "in" variable to
-    // determine how to link it to each drawn instance of the bound VBO.
-    // For example, the index used to look in the VBO associated with
-    // vs_Pos (attrPos) is advanced by 1 for each thread of the GPU running the
-    // vertex shader since its divisor is 0.
-    // On the other hand, the index used to look in the VBO associated with
-    // vs_Translate (attrTranslate) is advanced by 1 only when the next instance
-    // of our drawn object (in the base code example, the square) is processed
-    // by the GPU, thus being the same value for the first set of four vertices,
-    // then advancing to a new value for the next four, then the next four, and
-    // so on.
-    gl.drawElementsInstanced(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0, d.numInstances);
+    gl.drawElements(d.drawMode(), d.elemCount(), gl.UNSIGNED_INT, 0);
 
     if (this.attrPos != -1) gl.disableVertexAttribArray(this.attrPos);
-    if (this.attrNor != -1) gl.disableVertexAttribArray(this.attrNor);
-    if (this.attrCol != -1) gl.disableVertexAttribArray(this.attrCol);
-    if (this.attrTranslate != -1) gl.disableVertexAttribArray(this.attrTranslate);
-    if (this.attrUV != -1) gl.disableVertexAttribArray(this.attrUV);
   }
 };
 
