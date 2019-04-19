@@ -87,37 +87,72 @@ vec2 sceneMap(vec3 samplePoint) {
     //non-uniform scaling formula (thanks Jamie Wong):
     //float dist = someSDF(samplePoint / vec3(s_x, s_y, s_z)) * min(s_x, min(s_y, s_z));
 
-          spheres = true;
-          vec3 rotated = (inverse(rotateZ(5.0)) * vec4(samplePoint + vec3(0.0, 3.0, 0.0), 1.0)).xyz;
+    bool xCheck = samplePoint.x <= (u_Char1.x + u_Scale.x + 1.0) && samplePoint.x >= (u_Char1.x - u_Scale.x - 1.0);
+    bool yCheck = samplePoint.y <= (u_Char1.y + u_Scale.y + 1.0) && samplePoint.y >= (u_Char1.y - u_Scale.y - 1.0);
+    bool zCheck = samplePoint.z <= (u_Char1.z + u_Scale.z + 1.0) && samplePoint.z >= (u_Char1.z - u_Scale.z + 1.0);
+    
+      if (xCheck && yCheck) {
+        spheres = true;
+        vec3 rotated = (inverse(rotateZ(5.0)) * vec4(samplePoint + vec3(0.0, 3.0, 0.0), 1.0)).xyz;
           vec3 rotated2 = (inverse(rotateZ(-2.0)) * vec4(samplePoint + vec3(0.0, 6.0, 0.0), 1.0)).xyz;
           
           mat3 rotate = (mat3(u_R1,
                               u_R2,
                               u_R3));
 
-          vec3 transformed = (inverse(rotate) * vec3(samplePoint - u_Char1));
+          vec3 transformed = (inverse(rotate) * vec3(samplePoint));
+          transformed = transformed - u_Char1;
           sphereDist = boxSDF(transformed / u_Scale) * min(u_Scale[0], min(u_Scale[1], u_Scale[2])); //sphereSDF(samplePoint - u_Char1, 7.f);
 
+      }
+          
+          
           //loop through the number of joints we have and draw them!
           //pos, scale, r1, r2, r3
         
         for (int i = 0; i < int(u_NumJoints); i++) {
-          vec3 pos = u_LimbInformation[5*i];
-          vec3 scale = u_LimbInformation[5*i + 1];
-          vec3 r1 = u_LimbInformation[5*i + 2];
-          vec3 r2 = u_LimbInformation[5*i + 3];
-          vec3 r3 = u_LimbInformation[5*i + 4];
-          mat3 rotate2 = (mat3(r1,
-                              r2,
-                              r3));
-          transformed = (inverse(rotate2) * vec3(samplePoint + pos));
-          float joint = boxSDF((transformed / scale)) * min(scale.x, min(scale.y, scale.z));
-          sphereDist = smooth_min(sphereDist, joint, 0.0);
+          vec3 pos = u_LimbInformation[8*i];
+          vec3 scale = u_LimbInformation[8*i + 1];
+          vec3 forward = u_LimbInformation[8*i + 5];
+          vec3 right = u_LimbInformation[8*i + 6];
+          vec3 up = u_LimbInformation[8*i + 7];
+
+          bool yCheck = true; //samplePoint.y <= pos.y + 1.5 * scale.y + 1.0 && samplePoint.y >= pos.y - 1.5 * scale.y - 1.0; //(samplePoint.x <= (pos + right * scale.x).x ) && (samplePoint.x >= (pos - right * scale.x).x);
+
+          if (yCheck) {
+              spheres = true;
+              vec3 r1 = u_LimbInformation[8*i + 2];
+              vec3 r2 = u_LimbInformation[8*i + 3];
+              vec3 r3 = u_LimbInformation[8*i + 4];
+              mat3 rotate2 = (mat3(r1,
+                                  r2,
+                                  r3));
+              vec3 transformed = (inverse(rotate2) * vec3(samplePoint + vec3(-pos.x, pos.y, pos.z)));
+              //transformed += vec3(pos.x, pos.y / 2.0, pos.z);
+              float joint = boxSDF((transformed / scale)) * min(scale.x, min(scale.y, scale.z));
+              if (sphereDist == 0.f) {
+                sphereDist = joint;
+              } else {
+                sphereDist = smooth_min(sphereDist, joint, 0.0);
+              }
+            }
         }
+
+        //4.0, 10.0, 0.0
+        //float dot = sphereSDF(samplePoint + vec3(4.0, 10.0, 0.0), 1.0);
+        //float dot2 = sphereSDF(samplePoint + vec3(-2.0, 14.0, 0.0), 1.0);
 
         if (spheres) {
           return vec2(sphereDist, 2.f);
-        }
+         //if (sphereDist < dot && sphereDist < dot2 && sphereDist < 100.f) {
+         //  return vec2(sphereDist, 2.f);
+         //} else if (dot < sphereDist && dot < dot2 && dot < 100.f) {
+         //  return vec2(dot, 2.f);
+         //} else if (dot2 < sphereDist && dot2 < dot && dot2 < 100.f) {
+         //  return vec2(dot2, 2.f);
+         //
+          
+        } 
     
     return vec2(100.f, 0.f);
 }

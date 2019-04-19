@@ -96,6 +96,11 @@ class Character {
           data.push(r1); 
           data.push(r2); 
           data.push(r3);
+
+          //push forward right and up
+          data.push(this.limbs[l].joints[j].forward);
+          data.push(this.limbs[l].joints[j].right);
+          data.push(this.limbs[l].joints[j].up);
         }
       }
       return data;

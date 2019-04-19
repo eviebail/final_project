@@ -8,7 +8,7 @@ class Limb {
       for (let i = 0; i < joints.length; i++) {
         this.joints[i] = joints[i];
       }
-      console.log("Joints.size: " + this.joints.length);
+      //console.log("Joints.size: " + this.joints.length);
     }
 
     CCD(target : vec3) {
@@ -62,6 +62,8 @@ class Limb {
             let ptcL = Math.sqrt(ptc[0] * ptc[0] + ptc[1] * ptc[1] + ptc[2] * ptc[2]);
             vec3.div(ptc, ptc,  [ptcL, ptcL, ptcL]);
             let theta = Math.acos(vec3.dot(pec, ptc));
+            // theta = Math.max(theta, -90.0);
+            // theta = Math.min(theta, 90.0);
 
             //now let's get the axis!
             let r = vec3.create();
@@ -82,6 +84,10 @@ class Limb {
 
             //update the properties!
             //console.log("Old Orientation: " + joint.orientation[0] + ", " + joint.orientation[1] + ", " + joint.orientation[2]);
+            //get orientation from global up vector
+            var qu = quat.fromValues(0,0,0,0);
+            //quat.rotationTo(q,vec3.fromValues(0,1,0), joint.orientation);
+            //mat3.fromQuat(endpoint.rotation, q);
             vec3.transformMat3(joint.orientation, joint.orientation, joint.rotation);
             vec3.transformMat3(joint.right, joint.right, joint.rotation);
             vec3.transformMat3(joint.forward, joint.forward, joint.rotation);
@@ -91,12 +97,13 @@ class Limb {
             //now update the position of all of its children
             for (let j = i + 1; j < this.joints.length; j++) {
                 let jnt = this.joints[j];
+                //console.log();
                 //console.log("Old JPos: " + jnt.position[0] + ", " + jnt.position[1] + ", " + jnt.position[2]);
                 let p = vec3.create();
                 vec3.mul(p, this.joints[j-1].orientation, vec3.fromValues(this.joints[j - 1].scale[1] * 2.0, this.joints[j - 1].scale[1] * 2.0, this.joints[j - 1].scale[1]*2.0));
                 vec3.add(jnt.position, p, vec3.fromValues(this.joints[j - 1].position[0], this.joints[j - 1].position[1], this.joints[j - 1].position[2]));
                 //console.log("New JPos: " + jnt.position[0] + ", " + jnt.position[1] + ", " + jnt.position[2]);
-                jnt.position = vec3.fromValues(-jnt.position[0], jnt.position[1], jnt.position[2]);
+                jnt.position = vec3.fromValues(jnt.position[0], jnt.position[1], jnt.position[2]);
             }
          }
 

@@ -24,6 +24,7 @@ let square: Square;
 let prog : ShaderProgram;
 let time: number = 0;
 let character : Character = new Character(vec3.fromValues(0.0,0.0,0), vec2.fromValues(1,2));
+let sw : boolean = true;
 
 function loadScene() {
   screenQuad = new ScreenQuad();
@@ -63,13 +64,24 @@ function getPosition(event : MouseEvent)
         // x -= canvas.offsetLeft;
         // y -= canvas.offsetTop;
         let r = Math.random();
-        if (r < 0.3) {
-          character.moveToTarget(vec3.fromValues(4.0, 16.0, 0.0), 0);
-        } else if (r < 0.6) {
-          character.moveToTarget(vec3.fromValues(4.0, 10.0, 0.0), 0);
+
+        if (!sw) {
+          character.moveToTarget(vec3.fromValues(2.0, 10.0, 0.0), 0);
         } else {
           character.moveToTarget(vec3.fromValues(-2.0, 14.0, 0.0), 0);
         }
+        sw = !sw
+        
+        
+        // if (r < 0.25) {
+        //   character.moveToTarget(vec3.fromValues(4.0, 12.0, 0.0), 0);
+        // } else if (r < 0.5) {
+        //   character.moveToTarget(vec3.fromValues(4.0, 10.0, 0.0), 0);
+        // } else if (r < 0.75) {
+        //   character.moveToTarget(vec3.fromValues(-2.0, 14.0, 0.0), 0);
+        // } else {
+        //   character.moveToTarget(vec3.fromValues(-4.0, 12.0, 0.0), 0);
+        // }
         
         //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
         loadScene();
