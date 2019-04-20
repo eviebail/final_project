@@ -23,7 +23,7 @@ let screenQuad: ScreenQuad;
 let square: Square;
 let prog : ShaderProgram;
 let time: number = 0;
-let character : Character = new Character(vec3.fromValues(0.0,0.0,0), vec2.fromValues(1,2));
+let character : Character = new Character(vec3.fromValues(0.0,2.0,0), vec2.fromValues(1,2));
 let sw : boolean = true;
 
 function loadScene() {

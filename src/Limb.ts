@@ -22,6 +22,7 @@ class Limb {
         let endpoint : Leg = this.joints[this.joints.length - 1];
         //get quat rotation between target and endpoint orientation
         endpoint.rotation = mat3.fromValues(1,0,0,0,1,0,0,0,1);
+        endpoint.orientation = vec3.fromValues(0,1,0);
         var q = quat.fromValues(0,0,0,0);
         let destination : vec3 = vec3.create();
         vec3.subtract(destination, target, endpoint.position);
@@ -30,6 +31,7 @@ class Limb {
         // console.log("Position: " + endpoint.position[0] + ", " + endpoint.position[1] + ", " + endpoint.position[2]);
         // console.log("Destination: " + destination[0] + ", " + destination[1] + ", " + destination[2]);
 
+        let rot : mat3 = mat3.create();
         quat.rotationTo(q,destination, endpoint.orientation);
         mat3.fromQuat(endpoint.rotation, q);
 
@@ -46,6 +48,9 @@ class Limb {
         for (let i = this.joints.length - 2; i >= 0; i--) {
             //console.log("i: " + i);
             let joint : Leg = this.joints[i];
+
+            joint.rotation = mat3.fromValues(1,0,0,0,1,0,0,0,1);
+            joint.orientation = vec3.fromValues(0,1,0);
 
             //can't use quaternions here!
             let pc : vec3 = vec3.create();
@@ -111,6 +116,7 @@ class Limb {
         endpoint = this.joints[this.joints.length - 1];
         //get quat rotation between target and endpoint orientation
         endpoint.rotation = mat3.fromValues(1,0,0,0,1,0,0,0,1);
+        endpoint.orientation = vec3.fromValues(0,1,0);
         var q = quat.fromValues(0,0,0,0);
         destination = vec3.create();
         vec3.subtract(destination, target, endpoint.position);

@@ -127,8 +127,18 @@ vec2 sceneMap(vec3 samplePoint) {
               mat3 rotate2 = (mat3(r1,
                                   r2,
                                   r3));
-              vec3 transformed = (inverse(rotate2) * vec3(samplePoint + vec3(-pos.x, pos.y, pos.z)));
-              //transformed += vec3(pos.x, pos.y / 2.0, pos.z);
+              vec3 transformed = vec3(0);
+              if (i == 0) {
+                transformed = (inverse(rotate2) * vec3(samplePoint + vec3(-pos.x, pos.y - 0.5*scale.y, pos.z)));
+                transformed += vec3(0, 0.5 * scale.y,0);
+              } else {
+                //translate down by 0.5*scale
+                //rotate by its rotation matrix
+                //move down scale.y of prev bone
+                //rotate by previous bone's rotation matrix
+                transformed = inverse(rotate2) * (samplePoint + vec3(-pos.x, pos.y + 0.25 * scale.y, pos.z)); //(inverse(rotate2) * vec3());
+                //transformed += vec3(0, 0.5 * scale.y,0);
+              }
               float joint = boxSDF((transformed / scale)) * min(scale.x, min(scale.y, scale.z));
               if (sphereDist == 0.f) {
                 sphereDist = joint;

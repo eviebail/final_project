@@ -57,7 +57,7 @@ class Character {
             let pos = vec3.create();
             if (j == 0) {
               //get pos from root
-              vec3.mul(p, this.orientation, vec3.fromValues(this.scale[1] * 2.0, this.scale[1] * 2.0, this.scale[1]*2.0));
+              vec3.mul(p, this.orientation, vec3.fromValues(this.scale[1], this.scale[1], this.scale[1]));
               vec3.add(pos, p, vec3.fromValues(this.position[0], this.position[1], this.position[2]));
             } else {
               vec3.mul(p, this.legJoints[j-1].orientation, vec3.fromValues(this.legJoints[j - 1].scale[1] * 2.0, this.legJoints[j - 1].scale[1] * 2.0, this.legJoints[j - 1].scale[1]*2.0));
