@@ -237,68 +237,6 @@ float parabola(float x, float k) {
 
 void main() {
 
-  //let's cast a ray using the info we have!
-  //any point on frustrum Pf = ref + aH + bV where
-  //ref = u_Ref, a = 2*(Px/u_Dimensions.x - 0.5), b = 2*(Py/u_Dimensions.y - 0.5), and
-  //H = aspect_ratio*tan(FOV/2) * right_vector (aspect = width / height)
-  //V = tan(FOV/2) * up_vector
-
-  vec3 forward = normalize(u_Ref - u_Eye);
-  vec3 right = normalize(cross(forward, u_Up));
-  vec3 up = normalize(cross(right, forward));
-
-  vec3 h = right * length(u_Ref - u_Eye) * (float(u_Dimensions.x) / u_Dimensions.y) * tan(radians(45.0));
-  vec3 v = up * length(u_Ref - u_Eye) * tan(radians(45.0));
-
-  vec3 Pf = u_Ref + fs_Pos.x * h + fs_Pos.y * v;
-  vec3 dir = normalize(Pf - u_Eye);
-
-  //ray march along dir
-  vec2 res = rayMarch(u_Eye, dir);
-
-if (res.x > 99.f) {
-  vec3 p = u_Eye + res.x*dir;
-  //float noise = smoothstep(0.0,0.5,fbm(p.x, p.y)) + smoothstep(0.0,0.5,fbm(p.y, p.x));
-  out_Col = vec4(160.0 / 255.0, 247.0 / 255.0, 255.0 / 255.0, 1.0); //(vec3(1.0) - ((vec3(0.5) * 20.f * noise) * vec3(0.8, 0.3, 0.9)), 1.0); //234 227 244
-} else if (res.y == 1.f) {
-  vec3 p = u_Eye + res.x*dir;
-  vec3 n = estimateNormal(p); //86 244, 66
-
-  vec3 lightVector = vec3(-5.0,-2.0,0.0);
-
-  float diffuseTerm = dot(normalize(n), normalize(lightVector));
-  diffuseTerm = clamp(diffuseTerm, 0.f, 1.f);
-  float ambientTerm = 0.2;
-
-  float lightIntensity = diffuseTerm + ambientTerm;
-
-
-  vec4 H = (vec4(lightVector, 1.0) + (vec4(u_Eye,1.f) - vec4(p,1.0))) / 2.0;
-    float blinnTerm = max(pow(dot(normalize(H), normalize(vec4(lightVector, 1.0))), 100.f), 0.f);
-    blinnTerm = clamp(blinnTerm,0.f,1.f);
-
-    // Compute final shaded color
-    out_Col = vec4(vec3((17.f + 255.f*u_Color) / 255.f, 73.f / 255.f, (9.f + 255.f*u_Color) / 255.f) * lightIntensity + blinnTerm, 1.0); //58,35,89
-
-} else if (res.y == 2.f) {
-    vec3 p = u_Eye + res.x*dir;
-  vec3 n = estimateNormal(p);
-
-  vec3 lightVector = vec3(3.0,2.0,3.0);
-
-  float diffuseTerm = dot(normalize(n), normalize(lightVector));
-  diffuseTerm = clamp(diffuseTerm, 0.f, 1.f);
-  float ambientTerm = 0.2;
-
-  float lightIntensity = diffuseTerm + ambientTerm;
-
-
-  vec4 H = (vec4(lightVector, 1.0) + (vec4(u_Eye,1.f) - vec4(p,1.0))) / 2.0;
-    float blinnTerm = max(pow(dot(normalize(H), normalize(vec4(lightVector, 1.0))), 100.f), 0.f);
-    blinnTerm = clamp(blinnTerm,0.f,1.f);
-
-  float noise = parabola(fbm(p.x, p.y), 6.f);
-  out_Col = vec4(vec3(216.0 / 255.0, 67.0 / 255.0, 89.0 / 255.0) * lightIntensity + blinnTerm,1); // * 
-}
+  out_Col = vec4(1.0, 1.0, 0.0, 1.0);
   
 }

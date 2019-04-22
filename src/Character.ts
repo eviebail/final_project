@@ -24,7 +24,7 @@ class Character {
     this.forward = vec3.fromValues(0,1,0);
     this.right = vec3.fromValues(1,0,0);
     this.up = vec3.fromValues(0,0,1);
-    this.scale = vec3.fromValues(2,4,2);
+    this.scale = vec3.fromValues(10,5,5);
     this.r1 = vec3.fromValues(1,0,0);
     this.r2 = vec3.fromValues(0,1,0);
     this.r3 = vec3.fromValues(0,0,1);
@@ -80,29 +80,42 @@ class Character {
       this.limbs[limb].CCD(target);
     }
 
-    getVBOData() : vec3[] {
-      var data : vec3[] = new Array<vec3>();
+    getVBOData() : vec3[][] {
+      var data : vec3[][] = new Array<Array<vec3>>();
+
+      let pos : vec3[] = new Array();
+      let returnR1 : vec3[] = new Array();
+      let returnR2 : vec3[] = new Array();
+      let returnR3 : vec3[] = new Array();
+      let scale : vec3[] = new Array();
+
+      pos.push(this.position);
+      returnR1.push(this.r1);
+      returnR2.push(this.r2);
+      returnR3.push(this.r3);
+      scale.push(this.scale);
 
       //loop through all the joints and input their data!
       for (let l = 0; l < this.limbs.length; l++) {
         for (let j = 0; j < this.limbs[l].joints.length; j++) {
-          data.push(this.limbs[l].joints[j].position);
-          data.push(this.limbs[l].joints[j].scale);
+          pos.push(this.limbs[l].joints[j].position);
           let m = this.limbs[l].joints[j].rotation;
           let r1 = vec3.fromValues(m[0], m[3], m[6]);
           let r2 = vec3.fromValues(m[1], m[4], m[7]);
           let r3 = vec3.fromValues(m[2], m[5], m[8]); 
 
-          data.push(r1); 
-          data.push(r2); 
-          data.push(r3);
+          returnR1.push(r1); 
+          returnR2.push(r2); 
+          returnR3.push(r3);
 
-          //push forward right and up
-          data.push(this.limbs[l].joints[j].forward);
-          data.push(this.limbs[l].joints[j].right);
-          data.push(this.limbs[l].joints[j].up);
+          scale.push(this.limbs[l].joints[j].scale);
         }
       }
+      data.push(pos);
+      data.push(returnR1);
+      data.push(returnR2);
+      data.push(returnR3);
+      data.push(scale);
       return data;
     }
 

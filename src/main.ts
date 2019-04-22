@@ -5,10 +5,12 @@ import Square from './geometry/Square';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
 import Camera from './Camera';
 import {setGL} from './globals';
+import {readTextFile} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import { getUnpackedSettings } from 'http2';
 import ScreenQuad from './geometry/ScreenQuad';
 import Character from './Character';
+import Mesh from './geometry/Mesh';
 
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
@@ -19,37 +21,129 @@ const controls = {
   'Load Scene': loadScene, // A function pointer, essentially
 };
 
-let screenQuad: ScreenQuad;
-let square: Square;
+let screenQuad: ScreenQuad = new ScreenQuad();;
+let shape: Mesh;
 let prog : ShaderProgram;
 let time: number = 0;
-let character : Character = new Character(vec3.fromValues(0.0,2.0,0), vec2.fromValues(1,2));
+let character : Character = new Character(vec3.fromValues(0.0,0.0,0), vec2.fromValues(1,2));
 let sw : boolean = true;
+let obj0: string = readTextFile('./src/resources/penguin.obj');
 
 function loadScene() {
-  screenQuad = new ScreenQuad();
   screenQuad.create();
+  shape = new Mesh(obj0,vec3.fromValues(0.0,0.0,0.0));
+  shape.create();
   // time = 0;
 
-  prog.setChar1Pos(character.position);
-  prog.setScale(character.scale);
-  //t.rotateLimb(-12.0);
-  prog.setR1(character.r1);
-  prog.setR2(character.r2);
-  prog.setR3(character.r3);
-
   let data = character.getVBOData();
-  let arr : Float32Array = new Float32Array(3*data.length).fill(0);
-  //console.log(" / / / // / / / / / / / / / / / // / / / / / / // / /");
-  for (let u = 0; u < data.length; u++) {
-    for (let i = 0; i < 3; i++) {
-      arr[3*u + i] = data[u][i];
-      //console.log("ID: " + (3*u + i) + " + val: " + arr[3*u + i]);
-    }
-  }
 
-  prog.setLimb(arr);
-  prog.setnumJoints(character.totalNumJoints);
+  let n: number = data[0].length;
+    //set up instanced rendering for object shapes
+    let offsetsArray = [];
+    let colorsArray = [];
+    let r1Array = [];
+    let r2Array = [];
+    let r3Array = [];
+    let scaleArray = [];
+  
+    for(let i = 0; i < n; i++) {
+      let position : vec3 = data[0][i];
+      let r1 : vec3 = data[1][i];
+      let r2 : vec3 = data[2][i];
+      let r3 : vec3 = data[3][i];
+      let scale : vec3 = data[4][i];
+      
+      offsetsArray.push(position[0]);
+      offsetsArray.push(position[1]);
+      offsetsArray.push(position[2]);
+
+      r1Array.push(r1[0]);
+      r1Array.push(r1[1]);
+      r1Array.push(r1[2]);
+
+      r2Array.push(r2[0]);
+      r2Array.push(r2[1]);
+      r2Array.push(r2[2]);
+
+      r3Array.push(r3[0]);
+      r3Array.push(r3[1]);
+      r3Array.push(r3[2]);
+
+      scaleArray.push(scale[0]);
+      scaleArray.push(scale[1]);
+      scaleArray.push(scale[2]);
+
+      if (i == 0) {
+        colorsArray.push(1.0);
+        colorsArray.push(0.0);
+        colorsArray.push(1.0);
+        colorsArray.push(1.0); // Alpha channel
+      } else {
+        colorsArray.push((n - i + 1) / n);
+        colorsArray.push((n - i + 1) / n);
+        colorsArray.push((n - i + 1) / n);
+        colorsArray.push(1.0); // Alpha channel
+      }
+
+    }
+
+  // offsetsArray.push(0);
+  // offsetsArray.push(0);
+  // offsetsArray.push(0);
+
+  // offsetsArray.push(1.0);
+  // offsetsArray.push(0);
+  // offsetsArray.push(0);
+
+  // colorsArray.push(1.0);
+  // colorsArray.push(0.0);
+  // colorsArray.push(1.0);
+  // colorsArray.push(1.0);
+
+  // colorsArray.push(1.0);
+  // colorsArray.push(0.0);
+  // colorsArray.push(1.0);
+  // colorsArray.push(1.0);
+
+  // r1Array.push(1.0);
+  // r1Array.push(0);
+  // r1Array.push(0);
+  // r2Array.push(0);
+  // r2Array.push(1.0);
+  // r2Array.push(0);
+  // r3Array.push(0);
+  // r3Array.push(0);
+  // r3Array.push(1.0);
+  
+  // r1Array.push(1.0);
+  // r1Array.push(0);
+  // r1Array.push(0);
+  // r2Array.push(0);
+  // r2Array.push(1.0);
+  // r2Array.push(0);
+  // r3Array.push(0);
+  // r3Array.push(0);
+  // r3Array.push(1.0);
+
+  // scaleArray.push(1);
+  // scaleArray.push(1);
+  // scaleArray.push(1);
+
+  // scaleArray.push(1);
+  // scaleArray.push(2);
+  // scaleArray.push(1);
+
+  let offsets: Float32Array = new Float32Array(offsetsArray);
+  let colors: Float32Array = new Float32Array(colorsArray);
+  let r1s: Float32Array = new Float32Array(r1Array);
+  let r2s: Float32Array = new Float32Array(r2Array);
+  let r3s: Float32Array = new Float32Array(r3Array);
+  let scales: Float32Array = new Float32Array(scaleArray);
+  shape.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+  shape.setNumInstances(n); // grid of "particles"
+
+  // prog.setLimb(arr);
+  // prog.setnumJoints(character.totalNumJoints);
 }
 
 function getPosition(event : MouseEvent)
@@ -84,7 +178,7 @@ function getPosition(event : MouseEvent)
         // }
         
         //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
-        loadScene();
+        //loadScene();
       }
 
 function main() {
@@ -143,6 +237,11 @@ function main() {
     new Shader(gl.FRAGMENT_SHADER, require('./shaders/flat-frag.glsl')),
   ]);
 
+  const instancedShader = new ShaderProgram([
+    new Shader(gl.VERTEX_SHADER, require('./shaders/instanced-vert.glsl')),
+    new Shader(gl.FRAGMENT_SHADER, require('./shaders/instanced-frag.glsl')),
+  ]);
+
     // Initial call to load scene
     loadScene();
 
@@ -158,9 +257,13 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     //renderer.clear();
     processKeyPresses();
+    instancedShader.setTime(time);
     renderer.render(camera, prog, [
       screenQuad,
-    ], time);
+    ]);
+    renderer.render(camera, instancedShader, [
+      shape,
+    ]);
     time++;
     stats.end();
 
