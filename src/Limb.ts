@@ -19,31 +19,7 @@ class Limb {
             return;
         }
 
-        let endpoint : Leg = this.joints[this.joints.length - 1];
-        //get quat rotation between target and endpoint orientation
-        endpoint.rotation = mat3.fromValues(1,0,0,0,1,0,0,0,1);
-        endpoint.orientation = vec3.fromValues(0,1,0);
-        var q = quat.fromValues(0,0,0,0);
-        let destination : vec3 = vec3.create();
-        vec3.subtract(destination, target, endpoint.position);
-
-        // console.log("Target: " + target[0] + ", " + target[1] + ", " + target[2]);
-        // console.log("Position: " + endpoint.position[0] + ", " + endpoint.position[1] + ", " + endpoint.position[2]);
-        // console.log("Destination: " + destination[0] + ", " + destination[1] + ", " + destination[2]);
-
-        let rot : mat3 = mat3.create();
-        quat.rotationTo(q,destination, endpoint.orientation);
-        mat3.fromQuat(endpoint.rotation, q);
-
-        // console.log("EndRotMat: " + endpoint.rotation[0] + ", " + endpoint.rotation[1] + ", " + endpoint.rotation[2]
-        //             + ", " + endpoint.rotation[3] + ", " + endpoint.rotation[4] + ", " + endpoint.rotation[5]
-        //             + ", " + endpoint.rotation[6] + ", " + endpoint.rotation[7] + ", " + endpoint.rotation[8]);
-        
-        //update the properties!
-        vec3.transformMat3(endpoint.orientation, endpoint.orientation, endpoint.rotation);
-        vec3.transformMat3(endpoint.right, endpoint.right, endpoint.rotation);
-        vec3.transformMat3(endpoint.forward, endpoint.forward, endpoint.rotation);
-        vec3.transformMat3(endpoint.up, endpoint.up, endpoint.rotation);
+          let endpoint : Leg = this.joints[this.joints.length - 1];
 
         for (let i = this.joints.length - 2; i >= 0; i--) {
             //console.log("i: " + i);
@@ -56,7 +32,7 @@ class Limb {
             let pc : vec3 = vec3.create();
             let pec : vec3 = vec3.create();
             let ptc : vec3 = vec3.create();
-            vec3.sub(pc, endpoint.position, joint.position);
+            vec3.sub(pc, joint.position, endpoint.position);
 
             //cos(theta) = pe - pc / ||pe - pc|| dot pt - pc / ||pt - pc||
             vec3.sub(pec, endpoint.position, pc);
@@ -106,29 +82,12 @@ class Limb {
                 //console.log("Old JPos: " + jnt.position[0] + ", " + jnt.position[1] + ", " + jnt.position[2]);
                 let p = vec3.create();
                 vec3.mul(p, this.joints[j-1].orientation, vec3.fromValues(this.joints[j - 1].scale[1] * 2.0, this.joints[j - 1].scale[1] * 2.0, this.joints[j - 1].scale[1]*2.0));
-                vec3.add(jnt.position, p, vec3.fromValues(this.joints[j - 1].position[0], this.joints[j - 1].position[1], this.joints[j - 1].position[2]));
+                vec3.sub(jnt.position, vec3.fromValues(this.joints[j - 1].position[0], this.joints[j - 1].position[1], this.joints[j - 1].position[2]), p);
                 //console.log("New JPos: " + jnt.position[0] + ", " + jnt.position[1] + ", " + jnt.position[2]);
                 jnt.position = vec3.fromValues(jnt.position[0], jnt.position[1], jnt.position[2]);
             }
          }
-
-        //rotate the endjoint one more time to correct for any overshooting!
-        endpoint = this.joints[this.joints.length - 1];
-        //get quat rotation between target and endpoint orientation
-        endpoint.rotation = mat3.fromValues(1,0,0,0,1,0,0,0,1);
-        endpoint.orientation = vec3.fromValues(0,1,0);
-        var q = quat.fromValues(0,0,0,0);
-        destination = vec3.create();
-        vec3.subtract(destination, target, endpoint.position);
-        quat.rotationTo(q,destination, endpoint.orientation);
-        mat3.fromQuat(endpoint.rotation, q);
-        
-        //update the properties!
-        vec3.transformMat3(endpoint.orientation, endpoint.orientation, endpoint.rotation);
-        vec3.transformMat3(endpoint.right, endpoint.right, endpoint.rotation);
-        vec3.transformMat3(endpoint.forward, endpoint.forward, endpoint.rotation);
-        vec3.transformMat3(endpoint.up, endpoint.up, endpoint.rotation);
-        
+         //don't orient endjoint because we make it a foot!
     }
 
 };

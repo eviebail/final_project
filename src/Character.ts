@@ -24,28 +24,12 @@ class Character {
     this.forward = vec3.fromValues(0,1,0);
     this.right = vec3.fromValues(1,0,0);
     this.up = vec3.fromValues(0,0,1);
-    this.scale = vec3.fromValues(10,5,5);
+    this.scale = vec3.fromValues(1,1,1);
     this.r1 = vec3.fromValues(1,0,0);
     this.r2 = vec3.fromValues(0,1,0);
     this.r3 = vec3.fromValues(0,0,1);
 
     this.totalNumJoints = 0;
-
-      //should make one leg!
-        // let p = vec3.create();
-        // vec3.mul(p, this.orientation, vec3.fromValues(this.scale[1] * 2.0, this.scale[1] * 2.0, this.scale[1]*2.0));
-        // let pos = vec3.create();
-        // vec3.add(pos, p, vec3.fromValues(this.position[0], this.position[1], this.position[2]));
-        // let scale = vec3.fromValues(1,4,1);
-        // let r11 = vec3.fromValues(1,0,0);
-        // let r22 = vec3.fromValues(0,1,0);
-        // let r33 = vec3.fromValues(0,0,1);
-        
-        // this.legs.push(pos);
-        // this.legs.push(scale);
-        // this.legs.push(r11);
-        // this.legs.push(r22);
-        // this.legs.push(r33);
 
 
         for (let i = 0; i < numLegs[0]; i++) {
@@ -57,13 +41,13 @@ class Character {
             let pos = vec3.create();
             if (j == 0) {
               //get pos from root
-              vec3.mul(p, this.orientation, vec3.fromValues(this.scale[1], this.scale[1], this.scale[1]));
-              vec3.add(pos, p, vec3.fromValues(this.position[0], this.position[1], this.position[2]));
+              vec3.mul(p, this.orientation, vec3.fromValues(this.scale[1] * 3.0, this.scale[1] * 3.0, this.scale[1] * 3.0));
+              vec3.sub(pos, vec3.fromValues(this.position[0], this.position[1], this.position[2]), p);
             } else {
               vec3.mul(p, this.legJoints[j-1].orientation, vec3.fromValues(this.legJoints[j - 1].scale[1] * 2.0, this.legJoints[j - 1].scale[1] * 2.0, this.legJoints[j - 1].scale[1]*2.0));
-              vec3.add(pos, p, vec3.fromValues(this.legJoints[j - 1].position[0], this.legJoints[j - 1].position[1], this.legJoints[j - 1].position[2]));
+              vec3.sub(pos, vec3.fromValues(this.legJoints[j - 1].position[0], this.legJoints[j - 1].position[1], this.legJoints[j - 1].position[2]), p);
             }
-            let scale = vec3.fromValues(1,4,1);
+            let scale = vec3.fromValues(1,1,1);
             let m = mat3.create();
             mat3.identity(m);
             this.totalNumJoints++;
@@ -88,12 +72,14 @@ class Character {
       let returnR2 : vec3[] = new Array();
       let returnR3 : vec3[] = new Array();
       let scale : vec3[] = new Array();
+      let type : vec3[] = new Array(); // 0 - body, 1 - begin_joint, 2 - middle_joint, 3 - foot
 
       pos.push(this.position);
       returnR1.push(this.r1);
       returnR2.push(this.r2);
       returnR3.push(this.r3);
       scale.push(this.scale);
+      type.push(vec3.fromValues(0,0,0));
 
       //loop through all the joints and input their data!
       for (let l = 0; l < this.limbs.length; l++) {
@@ -109,6 +95,13 @@ class Character {
           returnR3.push(r3);
 
           scale.push(this.limbs[l].joints[j].scale);
+          if (j == 0) {
+            type.push(vec3.fromValues(1,1,1));
+          } else if (j == this.limbs[l].joints.length - 1) {
+            type.push(vec3.fromValues(3,3,3));
+          } else {
+            type.push(vec3.fromValues(2,2,2));
+          }
         }
       }
       data.push(pos);
@@ -116,6 +109,7 @@ class Character {
       data.push(returnR2);
       data.push(returnR3);
       data.push(scale);
+      data.push(type);
       return data;
     }
 
