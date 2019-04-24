@@ -16,11 +16,14 @@ import Plane from './geometry/Plane';
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-  tesselations: 5,
-  colorShift: 0,
-  sizeShift: 0,
+  'Generate Walk Cycle': generateWalkCycle,
+  'Bind Walk Cycle': bindWalkCycle,
+   walkActivated: 0,
+   visualizePoints: 0,
   'Load Scene': loadScene, // A function pointer, essentially
 };
+
+//store animation in character class?
 
 let screenQuad: ScreenQuad = new ScreenQuad();
 let plane : Plane = new Plane(vec3.fromValues(0,-5,0), vec2.fromValues(100,100), 10);
@@ -34,6 +37,10 @@ let time: number = 0;
 let character : Character = new Character(vec3.fromValues(0.0,3.0,0), vec2.fromValues(1,3)); //numjoints + 1 for foot
 let sw : boolean = true;
 let walk : boolean = false;
+let generated : boolean = false;
+let bound : boolean = false;
+let gen : boolean = false;
+let idx : vec2 = vec2.fromValues(3, 1);
 
 let obj0: string = readTextFile('./src/resources/penguin.obj');
 let obj1: string = readTextFile('./src/resources/limb.obj');
@@ -42,6 +49,17 @@ let obj3: string = readTextFile('./src/resources/middle_joint.obj');
 let obj4: string = readTextFile('./src/resources/foot_joint.obj');
 let obj5: string = readTextFile('./src/resources/body_1.obj');
 
+function generateWalkCycle() {
+  character.generateWalkCycle();
+  generated = true;
+}
+
+function bindWalkCycle() {
+  if (generated) {
+    character.bindWalkCycle();
+  }
+  bound = true;
+}
 function loadScene() {
   plane.create();
   screenQuad.create();
@@ -214,7 +232,7 @@ function loadScene() {
         colorsArrayE.push(1.0); // Alpha channel
       }
 
-      console.log("Offset: " + position[0] + ", " + position[1] + ", " + position[2]);
+      //console.log("Offset: " + position[0] + ", " + position[1] + ", " + position[2]);
 
     }
 
@@ -341,6 +359,94 @@ function getPosition(event : MouseEvent)
         loadScene();
       }
 
+function animate() {
+  console.log("IDX: " + idx[0]);
+  if (generated) {
+    if (idx[0] > 6) {
+        idx[0] = 6;
+        idx[1] = 0;
+    }
+
+    if (idx[0] < 0) {
+      idx[0] = 0;
+      idx[1] = 1;
+    }
+
+    for (let i = 0; i < character.limbs.length; ++i) {
+      let cyArray = character.legWalkCycles[i];
+      character.moveToTarget(cyArray[idx[0]], i); //target, limb
+      if (idx[1] == 1) {
+        idx[0]++;
+      } else {
+        idx[0]--;
+      }
+    }
+    loadScene();
+  }
+}
+
+function drawPoints() {
+  if (!bound) {
+    return;
+  }
+  if (controls.visualizePoints == 0) {
+    walk = false;
+  } else if (!gen) {
+    walk = true;
+    gen = true;
+    let offsetsArray = [];
+    let colorsArray = [];
+    let r1Array = [];
+    let r2Array = [];
+    let r3Array = [];
+    let scaleArray = [];
+
+    walkCycle = new Mesh(obj0, vec3.fromValues(0,0,0));
+    walkCycle.create();
+
+    let n = 0;
+
+    for (let i = 0; i < character.limbs.length; ++i) {
+      let cyArray = character.legWalkCycles[i];
+      for (let j = 0; j < cyArray.length; ++j) {
+        n++;
+        offsetsArray.push(cyArray[j][0]);
+        offsetsArray.push(cyArray[j][1]);
+        offsetsArray.push(cyArray[j][2]);
+      
+        r1Array.push(1);
+        r1Array.push(0);
+        r1Array.push(0);
+
+        r2Array.push(0);
+        r2Array.push(1);
+        r2Array.push(0);
+
+        r3Array.push(0);
+        r3Array.push(0);
+        r3Array.push(1);
+
+        scaleArray.push(0.2);
+        scaleArray.push(0.2);
+        scaleArray.push(0.2);
+      
+        colorsArray.push(1.0);
+        colorsArray.push(0.0);
+        colorsArray.push(0.0);
+        colorsArray.push(1.0);
+      }
+    }   
+    let offsets: Float32Array = new Float32Array(offsetsArray);
+    let colors: Float32Array = new Float32Array(colorsArray);
+    let r1s: Float32Array = new Float32Array(r1Array);
+    let r2s: Float32Array = new Float32Array(r2Array);
+    let r3s: Float32Array = new Float32Array(r3Array);
+    let scales: Float32Array = new Float32Array(scaleArray);
+    walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+    walkCycle.setNumInstances(n); // grid of "particles"
+  }
+}
+
 function main() {
   window.addEventListener('keypress', function (e) {
     // console.log(e.key);
@@ -369,14 +475,17 @@ function main() {
   // Add controls to the gui
   const gui = new DAT.GUI();
 
-  // gui.add(controls, 'colorShift', 0, 1).step(0.1);
-  // gui.add(controls, 'sizeShift', 0, 1).step(0.1);
+  gui.add(controls, 'Generate Walk Cycle');
+  gui.add(controls, 'Bind Walk Cycle');
+  gui.add(controls, 'walkActivated', 0, 1).step(1);
+  gui.add(controls, 'visualizePoints', 0, 1).step(1);
+  // gui.add(controls, 'colorShift', 0, 1).step(0.1); visualizePoints
 
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
   //mouseClickEvent addition
-  canvas.addEventListener("mousedown", getPosition, false);
+  //canvas.addEventListener("mousedown", getPosition, false);
 
   const gl = <WebGL2RenderingContext> canvas.getContext('webgl2');
   if (!gl) {
@@ -415,11 +524,22 @@ function main() {
     // Use this if you wish
   }
 
+  var prevVis = controls.visualizePoints;
   // This function will be called every frame
   function tick() {
     camera.update();
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+    if (controls.walkActivated == 1 && time % 3 == 0) {
+      animate();
+    }
+    if (controls.visualizePoints != prevVis) {
+      prevVis = controls.visualizePoints;
+      if (controls.visualizePoints == 1) {
+        drawPoints();
+      }
+    }
+
     //renderer.clear();
     processKeyPresses();
     instancedShader.setTime(time);

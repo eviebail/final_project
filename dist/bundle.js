@@ -6089,11 +6089,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 // Define an object with application parameters and button callbacks
 // This will be referred to by dat.GUI's functions that add GUI elements.
 const controls = {
-    tesselations: 5,
-    colorShift: 0,
-    sizeShift: 0,
+    'Generate Walk Cycle': generateWalkCycle,
+    'Bind Walk Cycle': bindWalkCycle,
+    walkActivated: 0,
+    visualizePoints: 0,
     'Load Scene': loadScene,
 };
+//store animation in character class?
 let screenQuad = new __WEBPACK_IMPORTED_MODULE_7__geometry_ScreenQuad__["a" /* default */]();
 let plane = new __WEBPACK_IMPORTED_MODULE_10__geometry_Plane__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, -5, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(100, 100), 10);
 let body;
@@ -6106,12 +6108,26 @@ let time = 0;
 let character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, 3.0, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(1, 3)); //numjoints + 1 for foot
 let sw = true;
 let walk = false;
+let generated = false;
+let bound = false;
+let gen = false;
+let idx = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(3, 1);
 let obj0 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/penguin.obj');
 let obj1 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/limb.obj');
 let obj2 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/begin_joint.obj');
 let obj3 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/middle_joint.obj');
 let obj4 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/foot_joint.obj');
 let obj5 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/body_1.obj');
+function generateWalkCycle() {
+    character.generateWalkCycle();
+    generated = true;
+}
+function bindWalkCycle() {
+    if (generated) {
+        character.bindWalkCycle();
+    }
+    bound = true;
+}
 function loadScene() {
     plane.create();
     screenQuad.create();
@@ -6250,7 +6266,7 @@ function loadScene() {
             colorsArrayE.push(252.0 / 255.0);
             colorsArrayE.push(1.0); // Alpha channel
         }
-        console.log("Offset: " + position[0] + ", " + position[1] + ", " + position[2]);
+        //console.log("Offset: " + position[0] + ", " + position[1] + ", " + position[2]);
     }
     let offsets = new Float32Array(offsetsArrayBd);
     let colors = new Float32Array(colorsArrayBd);
@@ -6354,6 +6370,84 @@ function getPosition(event) {
     //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
     loadScene();
 }
+function animate() {
+    console.log("IDX: " + idx[0]);
+    if (generated) {
+        if (idx[0] > 6) {
+            idx[0] = 6;
+            idx[1] = 0;
+        }
+        if (idx[0] < 0) {
+            idx[0] = 0;
+            idx[1] = 1;
+        }
+        for (let i = 0; i < character.limbs.length; ++i) {
+            let cyArray = character.legWalkCycles[i];
+            character.moveToTarget(cyArray[idx[0]], i); //target, limb
+            if (idx[1] == 1) {
+                idx[0]++;
+            }
+            else {
+                idx[0]--;
+            }
+        }
+        loadScene();
+    }
+}
+function drawPoints() {
+    if (!bound) {
+        return;
+    }
+    if (controls.visualizePoints == 0) {
+        walk = false;
+    }
+    else if (!gen) {
+        walk = true;
+        gen = true;
+        let offsetsArray = [];
+        let colorsArray = [];
+        let r1Array = [];
+        let r2Array = [];
+        let r3Array = [];
+        let scaleArray = [];
+        walkCycle = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](obj0, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0));
+        walkCycle.create();
+        let n = 0;
+        for (let i = 0; i < character.limbs.length; ++i) {
+            let cyArray = character.legWalkCycles[i];
+            for (let j = 0; j < cyArray.length; ++j) {
+                n++;
+                offsetsArray.push(cyArray[j][0]);
+                offsetsArray.push(cyArray[j][1]);
+                offsetsArray.push(cyArray[j][2]);
+                r1Array.push(1);
+                r1Array.push(0);
+                r1Array.push(0);
+                r2Array.push(0);
+                r2Array.push(1);
+                r2Array.push(0);
+                r3Array.push(0);
+                r3Array.push(0);
+                r3Array.push(1);
+                scaleArray.push(0.2);
+                scaleArray.push(0.2);
+                scaleArray.push(0.2);
+                colorsArray.push(1.0);
+                colorsArray.push(0.0);
+                colorsArray.push(0.0);
+                colorsArray.push(1.0);
+            }
+        }
+        let offsets = new Float32Array(offsetsArray);
+        let colors = new Float32Array(colorsArray);
+        let r1s = new Float32Array(r1Array);
+        let r2s = new Float32Array(r2Array);
+        let r3s = new Float32Array(r3Array);
+        let scales = new Float32Array(scaleArray);
+        walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+        walkCycle.setNumInstances(n); // grid of "particles"
+    }
+}
 function main() {
     window.addEventListener('keypress', function (e) {
         // console.log(e.key);
@@ -6377,12 +6471,15 @@ function main() {
     document.body.appendChild(stats.domElement);
     // Add controls to the gui
     const gui = new __WEBPACK_IMPORTED_MODULE_2_dat_gui__["GUI"]();
-    // gui.add(controls, 'colorShift', 0, 1).step(0.1);
-    // gui.add(controls, 'sizeShift', 0, 1).step(0.1);
+    gui.add(controls, 'Generate Walk Cycle');
+    gui.add(controls, 'Bind Walk Cycle');
+    gui.add(controls, 'walkActivated', 0, 1).step(1);
+    gui.add(controls, 'visualizePoints', 0, 1).step(1);
+    // gui.add(controls, 'colorShift', 0, 1).step(0.1); visualizePoints
     // get canvas and webgl context
     const canvas = document.getElementById('canvas');
     //mouseClickEvent addition
-    canvas.addEventListener("mousedown", getPosition, false);
+    //canvas.addEventListener("mousedown", getPosition, false);
     const gl = canvas.getContext('webgl2');
     if (!gl) {
         alert('WebGL 2 not supported!');
@@ -6411,11 +6508,21 @@ function main() {
     function processKeyPresses() {
         // Use this if you wish
     }
+    var prevVis = controls.visualizePoints;
     // This function will be called every frame
     function tick() {
         camera.update();
         stats.begin();
         gl.viewport(0, 0, window.innerWidth, window.innerHeight);
+        if (controls.walkActivated == 1 && time % 3 == 0) {
+            animate();
+        }
+        if (controls.visualizePoints != prevVis) {
+            prevVis = controls.visualizePoints;
+            if (controls.visualizePoints == 1) {
+                drawPoints();
+            }
+        }
         //renderer.clear();
         processKeyPresses();
         instancedShader.setTime(time);
@@ -16868,6 +16975,8 @@ class Character {
         this.legs = new Array();
         this.legJoints = new Array();
         this.limbs = new Array();
+        this.walkCycle = new Array();
+        this.legWalkCycles = new Array();
         this.position = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(position[0], position[1], position[2]);
         this.orientation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 1, 0);
         this.forward = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 1, 0);
@@ -16950,6 +17059,30 @@ class Character {
         data.push(scale);
         data.push(type);
         return data;
+    }
+    generateWalkCycle() {
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(-3.0, 8.0, 0));
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(-2.0, 4.0, 0));
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(-1.0, 2.0, 0));
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0, 0));
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(1.0, 2.0, 0));
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(2.0, 4.0, 0));
+        this.walkCycle.push(__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(3.0, 8.0, 0));
+    }
+    bindWalkCycle() {
+        for (let i = 0; i < this.limbs.length; ++i) {
+            let len = this.limbs[i].joints.length;
+            let scale = this.limbs[i].joints[0].scale;
+            let worldPosition = this.limbs[i].joints[len - 1].position;
+            let cycle = new Array();
+            for (let j = 0; j < this.walkCycle.length; j++) {
+                let pos = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].create();
+                __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].add(pos, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(worldPosition[0], worldPosition[1] - scale[1] / 2.0, worldPosition[2]), this.walkCycle[j]);
+                //console.log("Pos: " + pos[0] + ", " + pos[1] + ", " + pos[2]);
+                cycle.push(pos);
+            }
+            this.legWalkCycles.push(cycle);
+        }
     }
     rotateL(phi) {
         //about up
@@ -17317,7 +17450,7 @@ module.exports = "#version 300 es\n\nuniform mat4 u_ViewProj;\nuniform float u_T
 /* 77 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\nprecision highp float;\n\nin vec4 fs_Col;\nin vec4 fs_Pos;\nin vec4 fs_Nor;\n\nout vec4 out_Col;\n\nvoid main()\n{\n    vec4 lightVec = vec4(-11.0,-13.0,10.0,1.0);\n    vec4 lightVec2 = vec4(11.0,13.0,-10.0,1.0);\n    vec4 lightColor = vec4(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0, 1.0);\n    vec4 lightColor2 = vec4(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0, 1.0);\n\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(fs_Nor), normalize(lightVec));\n    float diffuseTerm2 = dot(normalize(fs_Nor), normalize(lightVec2));\n    // Avoid negative lighting values\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n    diffuseTerm2 = clamp(diffuseTerm2, 0.0, 1.0);\n\n    float ambientTerm = 0.4;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n    float lightIntensity2 = diffuseTerm2 + ambientTerm;   //Add a small float value to the color multiplier\n                                                        //to simulate ambient lighting. This ensures that faces that are not\n                                                        //lit by our point light are not completely black.\n\n    // Compute final shaded color\n    out_Col = fs_Col * (lightIntensity * lightColor);// + lightIntensity2 * lightColor2);\n}\n"
+module.exports = "#version 300 es\nprecision highp float;\n\nin vec4 fs_Col;\nin vec4 fs_Pos;\nin vec4 fs_Nor;\n\nout vec4 out_Col;\n\nvoid main()\n{\n    //vec4 lightVec = vec4(-11.0,-13.0,10.0,1.0);\n    //vec4 lightVec2 = vec4(11.0,13.0,-10.0,1.0);\n    //vec4 lightColor = vec4(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0, 1.0);\n    vec4 lightColor2 = vec4(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0, 1.0);\n\n    // Material base color (before shading)\n    vec4 diffuseColor = fs_Col; //vec4(1.0, 0.0, 0.5, 1.0);//texture(u_Texture, fs_UV);\n\n    vec3 lightColor = vec3(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0);\n    vec3 darkColor = vec3(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0);\n\n    //diffuseColor = vec4(mix(lightColor, darkColor, pow(fs_Pos.y, 1.0)), 1.0);\n\n    vec4 fs_LightVec = vec4(15.0,6.0,-6.0,1.0);\n\n    vec4 fs_LightVec2 = vec4(-15.0,-6.0,6.0,1.0);\n\n    //vec4 lightColor2 = vec4(171.0 * 0.5 / 255.0, 156.0 * 0.5 / 255.0, 216.0 * 0.5/ 255.0, 1.0); \n\n    if (dot(normalize(fs_Nor), normalize(fs_LightVec)) < 0.3) {\n        float t = dot(normalize(fs_Nor), normalize(fs_LightVec));\n        lightColor2 = vec4(darkColor, 1.0); // mix(darkColor, darkColor * fs_Col.rgb, 1.0 - t / 0.1) 87, 57, 178\n    }\n\n    if (dot(normalize(fs_Nor), normalize(fs_LightVec)) < 0.0) {\n        lightColor2 = vec4(darkColor * fs_Col.rgb, 1.0); //87, 57, 178\n    }\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.2;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n\n    diffuseTerm += 0.9 * dot(normalize(fs_Nor), normalize(fs_LightVec2));\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    lightIntensity += diffuseTerm + ambientTerm;\n\n    out_Col = vec4(diffuseColor.rgb * lightIntensity * lightColor2.rgb, 1.0);\n    \n    }\n"
 
 /***/ }),
 /* 78 */

@@ -17,6 +17,8 @@ class Character {
   r2 : vec3;
   r3 : vec3;
   totalNumJoints : number;
+  walkCycle : vec3[] = new Array<vec3>();
+  legWalkCycles : vec3[][] = new Array<Array<vec3>>();
 
   constructor(position: vec3, numLegs : vec2/*, scale : vec3, numArms : vec2, numLegs : vec2*/) {
     this.position = vec3.fromValues(position[0], position[1], position[2]);
@@ -111,6 +113,32 @@ class Character {
       data.push(scale);
       data.push(type);
       return data;
+    }
+
+    generateWalkCycle() {
+      this.walkCycle.push(vec3.fromValues(-3.0,8.0,0));
+      this.walkCycle.push(vec3.fromValues(-2.0,4.0,0));
+      this.walkCycle.push(vec3.fromValues(-1.0,2.0,0));
+      this.walkCycle.push(vec3.fromValues(0,0,0)); 
+      this.walkCycle.push(vec3.fromValues(1.0,2.0,0));
+      this.walkCycle.push(vec3.fromValues(2.0,4.0,0));
+      this.walkCycle.push(vec3.fromValues(3.0,8.0,0));
+    }
+
+    bindWalkCycle() {
+      for (let i = 0; i < this.limbs.length; ++i) {
+        let len = this.limbs[i].joints.length;
+        let scale = this.limbs[i].joints[0].scale;
+        let worldPosition = this.limbs[i].joints[len - 1].position;
+        let cycle = new Array<vec3>();
+        for (let j = 0; j < this.walkCycle.length; j++) {
+          let pos = vec3.create();
+          vec3.add(pos, vec3.fromValues(worldPosition[0], worldPosition[1] - scale[1] / 2.0, worldPosition[2]), this.walkCycle[j]);
+          //console.log("Pos: " + pos[0] + ", " + pos[1] + ", " + pos[2]);
+          cycle.push(pos);
+        }
+        this.legWalkCycles.push(cycle);
+      }
     }
 
     rotateL(phi : number) {
