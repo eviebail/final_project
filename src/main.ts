@@ -18,29 +18,43 @@ import Plane from './geometry/Plane';
 const controls = {
   'Generate Walk Cycle': generateWalkCycle,
   'Bind Walk Cycle': bindWalkCycle,
+  'Blue' : loadBlue,
+  'Flower Pot' : loadFlower,
    walkActivated: 0,
    visualizePoints: 0,
   'Load Scene': loadScene, // A function pointer, essentially
+  'Legs' : 1,
+  'Joints' : 2,
 };
 
 //store animation in character class?
 
+let numLegs = 1;
+let numJoints = 2;
 let screenQuad: ScreenQuad = new ScreenQuad();
 let plane : Plane = new Plane(vec3.fromValues(0,-5,0), vec2.fromValues(100,100), 10);
+
 let body: Mesh;
 let beginJoints: Mesh;
 let middleJoints: Mesh;
 let endJoints: Mesh;
+let eyes : Mesh;
+let ears : Mesh;
+let mouth : Mesh;
+
 let walkCycle: Mesh;
 let prog : ShaderProgram;
+let renderer : OpenGLRenderer;
 let time: number = 0;
-let character : Character = new Character(vec3.fromValues(0.0,3.0,0), vec2.fromValues(1,3)); //numjoints + 1 for foot
-let sw : boolean = true;
+let character : Character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * numJoints,0), vec2.fromValues(numLegs,numJoints + 1)); //numjoints + 1 for foot
+let blue : boolean = false;
 let walk : boolean = false;
 let generated : boolean = false;
 let bound : boolean = false;
 let gen : boolean = false;
-let idx : vec2 = vec2.fromValues(3, 1);
+let idxEven : vec2 = vec2.fromValues(3, 1);
+let idxOdd : vec2 = vec2.fromValues(3, 0);
+
 
 let obj0: string = readTextFile('./src/resources/penguin.obj');
 let obj1: string = readTextFile('./src/resources/limb.obj');
@@ -48,6 +62,41 @@ let obj2: string = readTextFile('./src/resources/begin_joint.obj');
 let obj3: string = readTextFile('./src/resources/middle_joint.obj');
 let obj4: string = readTextFile('./src/resources/foot_joint.obj');
 let obj5: string = readTextFile('./src/resources/body_1.obj');
+let blue_body  : string= readTextFile('./src/resources/blue_body.obj');;
+let blue_ears  : string= readTextFile('./src/resources/blue_ears.obj');;
+let blue_eyes  : string= readTextFile('./src/resources/blue_eyes.obj');;
+let blue_mouth : string = readTextFile('./src/resources/blue_mouth.obj');;
+
+function resetSystem() {
+  generated = false;
+  bound = false;
+  walk = false;
+  gen = false;
+  renderer.clear();
+  loadScene();
+}
+
+function updateCharacterLegs() {
+  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  resetSystem();
+}
+
+function updateCharacterJoints() {
+  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  resetSystem();
+}
+
+function loadBlue() {
+  blue = true;
+  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * 2,0), vec2.fromValues(4,3));
+  resetSystem();
+}
+
+function loadFlower() {
+  blue = false;
+  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * 1,0), vec2.fromValues(1,2));
+  resetSystem();
+}
 
 function generateWalkCycle() {
   character.generateWalkCycle();
@@ -60,10 +109,89 @@ function bindWalkCycle() {
   }
   bound = true;
 }
+
+function loadAssets() {
+  let offsetsArray = [];
+  let colorsArray = [];
+  let r1Array = [];
+  let r2Array = [];
+  let r3Array = [];
+  let scaleArray = [];
+  let typeArray = [];
+
+  offsetsArray.push(0);
+  offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.5);
+  offsetsArray.push(0);
+
+  r1Array.push(1);
+  r1Array.push(0);
+  r1Array.push(0);
+        
+  r2Array.push(0);
+  r2Array.push(1);
+  r2Array.push(0);
+        
+  r3Array.push(0);
+  r3Array.push(0);
+  r3Array.push(1);
+        
+  scaleArray.push(1.0);
+  scaleArray.push(1.0);
+  scaleArray.push(1.0);
+
+  colorsArray.push(0.0);
+  colorsArray.push(1.0);
+  colorsArray.push(1.0);
+  colorsArray.push(1.0);
+
+  typeArray.push(4.0);
+  typeArray.push(4.0);
+  typeArray.push(4.0);
+
+  let offsets: Float32Array = new Float32Array(offsetsArray);
+  let colors: Float32Array = new Float32Array(colorsArray);
+  let r1s: Float32Array = new Float32Array(r1Array);
+  let r2s: Float32Array = new Float32Array(r2Array);
+  let r3s: Float32Array = new Float32Array(r3Array);
+  let scales: Float32Array = new Float32Array(scaleArray);
+  let types: Float32Array = new Float32Array(typeArray);
+  eyes.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  eyes.setNumInstances(1); // grid of "particles"
+
+  typeArray = [];
+  typeArray.push(5.0);
+  typeArray.push(5.0);
+  typeArray.push(5.0);
+  types = new Float32Array(typeArray);
+
+  ears.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  ears.setNumInstances(1); // grid of "particles"
+
+  typeArray = [];
+  typeArray.push(6.0);
+  typeArray.push(6.0);
+  typeArray.push(6.0);
+  types = new Float32Array(typeArray);
+
+  mouth.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  mouth.setNumInstances(1); // grid of "particles"
+}
 function loadScene() {
   plane.create();
   screenQuad.create();
-  body = new Mesh(obj5,vec3.fromValues(0.0,0.0,0.0));
+  if (blue) {
+    body = new Mesh(blue_body,vec3.fromValues(0.0,0.0,0.0));
+    eyes = new Mesh(blue_eyes,vec3.fromValues(0.0,0.0,0.0));
+    ears = new Mesh(blue_ears,vec3.fromValues(0.0,0.0,0.0));
+    mouth = new Mesh(blue_mouth,vec3.fromValues(0.0,0.0,0.0));
+    eyes.create();
+    ears.create();
+    mouth.create();
+    loadAssets();
+  } else {
+    body = new Mesh(obj5,vec3.fromValues(0.0,0.0,0.0));
+  }
+
   body.create();
 
   beginJoints = new Mesh(obj2,vec3.fromValues(0.0,0.0,0.0));
@@ -91,6 +219,7 @@ function loadScene() {
     let r2ArrayBd = [];
     let r3ArrayBd = [];
     let scaleArrayBd = [];
+    let typeArrayBd = [];
 
     let offsetsArrayBg = [];
     let colorsArrayBg = [];
@@ -98,6 +227,7 @@ function loadScene() {
     let r2ArrayBg = [];
     let r3ArrayBg = [];
     let scaleArrayBg = [];
+    let typeArrayBg = [];
 
     let offsetsArrayM = [];
     let colorsArrayM = [];
@@ -105,6 +235,7 @@ function loadScene() {
     let r2ArrayM = [];
     let r3ArrayM = [];
     let scaleArrayM = [];
+    let typeArrayM = [];
 
     let offsetsArrayE = [];
     let colorsArrayE = [];
@@ -112,6 +243,7 @@ function loadScene() {
     let r2ArrayE = [];
     let r3ArrayE = [];
     let scaleArrayE = [];
+    let typeArrayE = [];
   
     for(let i = 0; i < n; i++) {
       let position : vec3 = data[0][i];
@@ -125,7 +257,7 @@ function loadScene() {
         numBody++;
 
         offsetsArrayBd.push(position[0]);
-        offsetsArrayBd.push(position[1]);
+        offsetsArrayBd.push(position[1] - 1.0);
         offsetsArrayBd.push(position[2]);
 
         r1ArrayBd.push(r1[0]);
@@ -143,6 +275,10 @@ function loadScene() {
         scaleArrayBd.push(scale[0]);
         scaleArrayBd.push(scale[1]);
         scaleArrayBd.push(scale[2]);
+        
+        typeArrayBd.push(0.0);
+        typeArrayBd.push(0.0);
+        typeArrayBd.push(0.0);
 
         colorsArrayBd.push(128.0 / 255.0); //128, 200, 252
         colorsArrayBd.push(200.0 / 255.0);
@@ -170,6 +306,10 @@ function loadScene() {
         scaleArrayBg.push(scale[0]);
         scaleArrayBg.push(scale[1]);
         scaleArrayBg.push(scale[2]);
+
+        typeArrayBg.push(1.0);
+        typeArrayBg.push(1.0);
+        typeArrayBg.push(1.0);
         
         colorsArrayBg.push(128.0 / 255.0);
         colorsArrayBg.push(200.0 / 255.0);
@@ -198,6 +338,10 @@ function loadScene() {
         scaleArrayM.push(scale[0]);
         scaleArrayM.push(scale[1]);
         scaleArrayM.push(scale[2]);
+
+        typeArrayM.push(2.0);
+        typeArrayM.push(2.0);
+        typeArrayM.push(2.0);
         
         colorsArrayM.push(128.0 / 255.0);
         colorsArrayM.push(200.0 / 255.0);
@@ -225,6 +369,10 @@ function loadScene() {
         scaleArrayE.push(scale[0]);
         scaleArrayE.push(scale[1]);
         scaleArrayE.push(scale[2]);
+
+        typeArrayE.push(3.0);
+        typeArrayE.push(3.0);
+        typeArrayE.push(3.0);
         
         colorsArrayE.push(128.0 / 255.0);
         colorsArrayE.push(200.0 / 255.0);
@@ -242,7 +390,8 @@ function loadScene() {
   let r2s: Float32Array = new Float32Array(r2ArrayBd);
   let r3s: Float32Array = new Float32Array(r3ArrayBd);
   let scales: Float32Array = new Float32Array(scaleArrayBd);
-  body.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+  let types: Float32Array = new Float32Array(typeArrayBd);
+  body.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
   body.setNumInstances(numBody); // grid of "particles"
 
   offsets = new Float32Array(offsetsArrayBg);
@@ -251,7 +400,8 @@ function loadScene() {
   r2s  = new Float32Array(r2ArrayBg);
   r3s = new Float32Array(r3ArrayBg);
   scales = new Float32Array(scaleArrayBg);
-  beginJoints.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+  types = new Float32Array(typeArrayBg);
+  beginJoints.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
   beginJoints.setNumInstances(numBegin); // grid of "particles"
 
   offsets = new Float32Array(offsetsArrayM);
@@ -260,7 +410,8 @@ function loadScene() {
   r2s  = new Float32Array(r2ArrayM);
   r3s = new Float32Array(r3ArrayM);
   scales = new Float32Array(scaleArrayM);
-  middleJoints.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+  types = new Float32Array(typeArrayM);
+  middleJoints.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
   middleJoints.setNumInstances(numMiddle); // grid of "particles"
 
   offsets = new Float32Array(offsetsArrayE);
@@ -269,7 +420,8 @@ function loadScene() {
   r2s  = new Float32Array(r2ArrayE);
   r3s = new Float32Array(r3ArrayE);
   scales = new Float32Array(scaleArrayE);
-  endJoints.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+  types = new Float32Array(typeArrayE);
+  endJoints.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
   endJoints.setNumInstances(numEnd); // grid of "particles"
 
   // prog.setLimb(arr);
@@ -278,108 +430,129 @@ function loadScene() {
 
 function getPosition(event : MouseEvent)
       {
-        walk = true;
-        // var x = event.clientX + document.body.scrollLeft +
-        //       document.documentElement.scrollLeft;
-        // var y = event.clientY + document.body.scrollTop +
-        //       document.documentElement.scrollTop;
+        animate();
+        // walk = true;
+        // // var x = event.clientX + document.body.scrollLeft +
+        // //       document.documentElement.scrollLeft;
+        // // var y = event.clientY + document.body.scrollTop +
+        // //       document.documentElement.scrollTop;
 
-        // var canvas = document.getElementById("canvas");
+        // // var canvas = document.getElementById("canvas");
 
-        // x -= canvas.offsetLeft;
-        // y -= canvas.offsetTop;
-        let r = Math.random();
+        // // x -= canvas.offsetLeft;
+        // // y -= canvas.offsetTop;
+        // let r = Math.random();
 
-        let tgt = vec3.create();
-        if (!sw) {
-          tgt = vec3.fromValues(5.0, -5.0, 0.0);
-          character.moveToTarget(tgt, 0);
-        } else {
-          tgt = vec3.fromValues(-3.0, -5.0, 0.0);
-          character.moveToTarget(tgt, 0);
-        }
-        sw = !sw;
-
-        let offsetsArray = [];
-        let colorsArray = [];
-        let r1Array = [];
-        let r2Array = [];
-        let r3Array = [];
-        let scaleArray = [];
-
-        walkCycle = new Mesh(obj0, tgt);
-        walkCycle.create();
-
-        offsetsArray.push(tgt[0]);
-        offsetsArray.push(tgt[1]);
-        offsetsArray.push(tgt[2]);
-
-        r1Array.push(1);
-        r1Array.push(0);
-        r1Array.push(0);
-        
-        r2Array.push(0);
-        r2Array.push(1);
-        r2Array.push(0);
-        
-        r3Array.push(0);
-        r3Array.push(0);
-        r3Array.push(1);
-        
-        scaleArray.push(0.2);
-        scaleArray.push(0.2);
-        scaleArray.push(0.2);
-
-        colorsArray.push(1.0);
-        colorsArray.push(0.0);
-        colorsArray.push(0.0);
-        colorsArray.push(1.0);
-
-        let offsets: Float32Array = new Float32Array(offsetsArray);
-        let colors: Float32Array = new Float32Array(colorsArray);
-        let r1s: Float32Array = new Float32Array(r1Array);
-        let r2s: Float32Array = new Float32Array(r2Array);
-        let r3s: Float32Array = new Float32Array(r3Array);
-        let scales: Float32Array = new Float32Array(scaleArray);
-        walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
-        walkCycle.setNumInstances(1); // grid of "particles"
-        
-        
-        // if (r < 0.25) {
-        //   character.moveToTarget(vec3.fromValues(4.0, 12.0, 0.0), 0);
-        // } else if (r < 0.5) {
-        //   character.moveToTarget(vec3.fromValues(4.0, 10.0, 0.0), 0);
-        // } else if (r < 0.75) {
-        //   character.moveToTarget(vec3.fromValues(-2.0, 14.0, 0.0), 0);
+        // let tgt = vec3.create();
+        // if (!sw) {
+        //   tgt = vec3.fromValues(5.0, -5.0, 0.0);
+        //   character.moveToTarget(tgt, 0);
         // } else {
-        //   character.moveToTarget(vec3.fromValues(-4.0, 12.0, 0.0), 0);
+        //   tgt = vec3.fromValues(-3.0, -5.0, 0.0);
+        //   character.moveToTarget(tgt, 0);
         // }
+        // sw = !sw;
+
+        // let offsetsArray = [];
+        // let colorsArray = [];
+        // let r1Array = [];
+        // let r2Array = [];
+        // let r3Array = [];
+        // let scaleArray = [];
+
+        // walkCycle = new Mesh(obj0, tgt);
+        // walkCycle.create();
+
+        // offsetsArray.push(tgt[0]);
+        // offsetsArray.push(tgt[1]);
+        // offsetsArray.push(tgt[2]);
+
+        // r1Array.push(1);
+        // r1Array.push(0);
+        // r1Array.push(0);
         
-        //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
-        loadScene();
+        // r2Array.push(0);
+        // r2Array.push(1);
+        // r2Array.push(0);
+        
+        // r3Array.push(0);
+        // r3Array.push(0);
+        // r3Array.push(1);
+        
+        // scaleArray.push(0.2);
+        // scaleArray.push(0.2);
+        // scaleArray.push(0.2);
+
+        // colorsArray.push(1.0);
+        // colorsArray.push(0.0);
+        // colorsArray.push(0.0);
+        // colorsArray.push(1.0);
+
+        // let offsets: Float32Array = new Float32Array(offsetsArray);
+        // let colors: Float32Array = new Float32Array(colorsArray);
+        // let r1s: Float32Array = new Float32Array(r1Array);
+        // let r2s: Float32Array = new Float32Array(r2Array);
+        // let r3s: Float32Array = new Float32Array(r3Array);
+        // let scales: Float32Array = new Float32Array(scaleArray);
+        // walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+        // walkCycle.setNumInstances(1); // grid of "particles"
+        
+        
+        // // if (r < 0.25) {
+        // //   character.moveToTarget(vec3.fromValues(4.0, 12.0, 0.0), 0);
+        // // } else if (r < 0.5) {
+        // //   character.moveToTarget(vec3.fromValues(4.0, 10.0, 0.0), 0);
+        // // } else if (r < 0.75) {
+        // //   character.moveToTarget(vec3.fromValues(-2.0, 14.0, 0.0), 0);
+        // // } else {
+        // //   character.moveToTarget(vec3.fromValues(-4.0, 12.0, 0.0), 0);
+        // // }
+        
+        // //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
+        // loadScene();
       }
 
 function animate() {
-  console.log("IDX: " + idx[0]);
+  console.log("IDX: " + idxEven[0]);
   if (generated) {
-    if (idx[0] > 6) {
-        idx[0] = 6;
-        idx[1] = 0;
+    if (idxEven[0] > 6) {
+        idxEven[0] = 6;
+        idxEven[1] = 0;
     }
 
-    if (idx[0] < 0) {
-      idx[0] = 0;
-      idx[1] = 1;
+    if (idxEven[0] < 0) {
+      idxEven[0] = 0;
+      idxEven[1] = 1;
     }
+
+    if (idxOdd[0] > 6) {
+      idxOdd[0] = 6;
+      idxOdd[1] = 0;
+  }
+
+  if (idxOdd[0] < 0) {
+    idxOdd[0] = 0;
+    idxOdd[1] = 1;
+  }
 
     for (let i = 0; i < character.limbs.length; ++i) {
       let cyArray = character.legWalkCycles[i];
-      character.moveToTarget(cyArray[idx[0]], i); //target, limb
-      if (idx[1] == 1) {
-        idx[0]++;
+      if (i % 2 == 0) {
+        character.moveToTarget(cyArray[idxEven[0]], i); //target, limb
       } else {
-        idx[0]--;
+        character.moveToTarget(cyArray[idxOdd[0]], i); //target, limb
       }
+       
+    }
+    if (idxEven[1] == 1) {
+      idxEven[0]++;
+    } else {
+      idxEven[0]--;
+    }
+    if (idxOdd[1] == 1) {
+      idxOdd[0]++;
+    } else {
+      idxOdd[0]--;
     }
     loadScene();
   }
@@ -400,6 +573,7 @@ function drawPoints() {
     let r2Array = [];
     let r3Array = [];
     let scaleArray = [];
+    let typeArray = [];
 
     walkCycle = new Mesh(obj0, vec3.fromValues(0,0,0));
     walkCycle.create();
@@ -429,6 +603,10 @@ function drawPoints() {
         scaleArray.push(0.2);
         scaleArray.push(0.2);
         scaleArray.push(0.2);
+
+        typeArray.push(-1);
+        typeArray.push(-1);
+        typeArray.push(-1);
       
         colorsArray.push(1.0);
         colorsArray.push(0.0);
@@ -442,7 +620,8 @@ function drawPoints() {
     let r2s: Float32Array = new Float32Array(r2Array);
     let r3s: Float32Array = new Float32Array(r3Array);
     let scales: Float32Array = new Float32Array(scaleArray);
-    walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
+    let types: Float32Array = new Float32Array(typeArray);
+    walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
     walkCycle.setNumInstances(n); // grid of "particles"
   }
 }
@@ -479,6 +658,10 @@ function main() {
   gui.add(controls, 'Bind Walk Cycle');
   gui.add(controls, 'walkActivated', 0, 1).step(1);
   gui.add(controls, 'visualizePoints', 0, 1).step(1);
+  gui.add(controls, 'Legs', 1, 5).step(1);
+  gui.add(controls, 'Joints', 0, 5).step(1);
+  gui.add(controls, 'Blue');
+  gui.add(controls, 'Flower Pot');
   // gui.add(controls, 'colorShift', 0, 1).step(0.1); visualizePoints
 
 
@@ -497,7 +680,7 @@ function main() {
 
   const camera = new Camera(vec3.fromValues(10, 10, 10), vec3.fromValues(0,0, 0));
 
-  const renderer = new OpenGLRenderer(canvas);
+  renderer = new OpenGLRenderer(canvas);
   renderer.setClearColor(164.0 / 255.0, 233.0 / 255.0, 1.0, 1);
   gl.enable(gl.DEPTH_TEST);
 
@@ -525,6 +708,8 @@ function main() {
   }
 
   var prevVis = controls.visualizePoints;
+  var prevLeg = controls.Legs;
+  var prevJoint = controls.Joints;
   // This function will be called every frame
   function tick() {
     camera.update();
@@ -539,6 +724,16 @@ function main() {
         drawPoints();
       }
     }
+    if (controls.Legs != prevLeg) {
+      prevLeg = controls.Legs;
+      numLegs = controls.Legs;
+      updateCharacterLegs();
+    }
+    if (controls.Joints != prevJoint) {
+      prevJoint = controls.Joints;
+      numJoints = controls.Joints;
+      updateCharacterJoints();
+    }
 
     //renderer.clear();
     processKeyPresses();
@@ -550,10 +745,24 @@ function main() {
       plane,
     ]);
     if (walk) {
+      if (blue) {
+        renderer.render(camera, instancedShader, [
+          body, beginJoints, middleJoints, endJoints, walkCycle,
+          eyes, ears, mouth
+        ]);
+      } else {
       renderer.render(camera, instancedShader, [
         body, beginJoints, middleJoints, endJoints, walkCycle
       ]);
+    }
+      
     } else {
+      if (blue) {
+        renderer.render(camera, instancedShader, [
+          body, beginJoints, middleJoints, endJoints,
+          eyes, ears, mouth
+        ]);
+      }
       renderer.render(camera, instancedShader, [
         body, beginJoints, middleJoints, endJoints
       ]);

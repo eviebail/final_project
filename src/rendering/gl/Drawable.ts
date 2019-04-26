@@ -13,6 +13,7 @@ abstract class Drawable {
   bufR2 : WebGLBuffer;
   bufR3 : WebGLBuffer;
   bufScale : WebGLBuffer;
+  bufType : WebGLBuffer;
 
   idxGenerated: boolean = false;
   posGenerated: boolean = false;
@@ -24,6 +25,7 @@ abstract class Drawable {
   r2Generated : boolean = false;
   r3Generated : boolean = false;
   scaleGenerated : boolean = false;
+  typeGenerated : boolean = false;
 
   numInstances: number = 1; // How many instances of this Drawable the shader program should draw
 
@@ -40,6 +42,7 @@ abstract class Drawable {
     gl.deleteBuffer(this.bufR2);
     gl.deleteBuffer(this.bufR3);
     gl.deleteBuffer(this.bufScale);
+    gl.deleteBuffer(this.bufType);
   }
 
   generateIdx() {
@@ -90,6 +93,11 @@ abstract class Drawable {
   generateScale() {
     this.scaleGenerated = true;
     this.bufScale = gl.createBuffer();
+  }
+
+  generateType() {
+    this.typeGenerated = true;
+    this.bufType = gl.createBuffer();
   }
 
   bindIdx(): boolean {
@@ -160,6 +168,13 @@ abstract class Drawable {
       gl.bindBuffer(gl.ARRAY_BUFFER, this.bufScale);
     }
     return this.scaleGenerated;
+  }
+
+  bindType(): boolean {
+    if (this.typeGenerated) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, this.bufType);
+    }
+    return this.typeGenerated;
   }
 
   elemCount(): number {

@@ -15,16 +15,19 @@ in vec3 vs_R1;
 in vec3 vs_R2;
 in vec3 vs_R3;
 in vec3 vs_Scale;
+in vec3 vs_Type;
 
 out vec4 fs_Col;
 out vec4 fs_Pos;
 out vec4 fs_Nor;
+out vec3 fs_Type;
 
 void main()
 {
     fs_Col = vs_Col;
     fs_Pos = vs_Pos;
     fs_Nor = vs_Nor;
+    fs_Type = vs_Type;
 
     mat3 scale = mat3(vec3(vs_Scale[0], 0, 0), 
                       vec3(0, vs_Scale[1], 0),

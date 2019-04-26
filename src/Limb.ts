@@ -20,6 +20,7 @@ class Limb {
         }
 
           let endpoint : Leg = this.joints[this.joints.length - 1];
+          let point = vec3.fromValues(endpoint.position[0], endpoint.position[1] - endpoint.scale[1], endpoint.position[2]);
 
         for (let i = this.joints.length - 2; i >= 0; i--) {
             //console.log("i: " + i);
@@ -32,10 +33,10 @@ class Limb {
             let pc : vec3 = vec3.create();
             let pec : vec3 = vec3.create();
             let ptc : vec3 = vec3.create();
-            vec3.sub(pc, joint.position, endpoint.position);
+            vec3.sub(pc, joint.position, point);
 
             //cos(theta) = pe - pc / ||pe - pc|| dot pt - pc / ||pt - pc||
-            vec3.sub(pec, endpoint.position, pc);
+            vec3.sub(pec, point, pc);
             let pecL = Math.sqrt(pec[0] * pec[0] + pec[1] * pec[1] + pec[2] * pec[2]);
             vec3.div(pec, pec,  [pecL, pecL, pecL]);
 
@@ -66,7 +67,6 @@ class Limb {
             //update the properties!
             //console.log("Old Orientation: " + joint.orientation[0] + ", " + joint.orientation[1] + ", " + joint.orientation[2]);
             //get orientation from global up vector
-            var qu = quat.fromValues(0,0,0,0);
             //quat.rotationTo(q,vec3.fromValues(0,1,0), joint.orientation);
             //mat3.fromQuat(endpoint.rotation, q);
             vec3.transformMat3(joint.orientation, joint.orientation, joint.rotation);

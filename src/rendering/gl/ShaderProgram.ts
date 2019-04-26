@@ -30,6 +30,7 @@ class ShaderProgram {
   attrR2: number;
   attrR3: number;
   attrScale: number;
+  attrType: number;
 
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
@@ -63,6 +64,7 @@ class ShaderProgram {
     this.attrR2 = gl.getAttribLocation(this.prog, "vs_R2");
     this.attrR3 = gl.getAttribLocation(this.prog, "vs_R3");
     this.attrScale = gl.getAttribLocation(this.prog, "vs_Scale");
+    this.attrType = gl.getAttribLocation(this.prog, "vs_Type");
     this.unifModel      = gl.getUniformLocation(this.prog, "u_Model");
     this.unifModelInvTr = gl.getUniformLocation(this.prog, "u_ModelInvTr");
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
@@ -203,6 +205,12 @@ class ShaderProgram {
       gl.vertexAttribDivisor(this.attrScale, 1); // Advance 1 index in translate VBO for each drawn instance
     }
 
+    if (this.attrType != -1 && d.bindType()) {
+      gl.enableVertexAttribArray(this.attrType);
+      gl.vertexAttribPointer(this.attrType, 3, gl.FLOAT, false, 0, 0);
+      gl.vertexAttribDivisor(this.attrType, 1); // Advance 1 index in translate VBO for each drawn instance
+    }
+
     // TODO: Set up attribute data for additional instanced rendering data as needed
 
     d.bindIdx();
@@ -228,6 +236,7 @@ class ShaderProgram {
     if (this.attrR2 != -1) gl.disableVertexAttribArray(this.attrR2);
     if (this.attrR3 != -1) gl.disableVertexAttribArray(this.attrR3);
     if (this.attrScale != -1) gl.disableVertexAttribArray(this.attrScale);
+    if (this.attrType != -1) gl.disableVertexAttribArray(this.attrType);
   }
 };
 
