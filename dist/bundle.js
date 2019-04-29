@@ -6123,32 +6123,37 @@ let endJoints;
 let eyes;
 let ears;
 let mouth;
+let flowers;
+let stem;
+let bulb;
 let walkCycle;
 let prog;
 let renderer;
 let time = 0;
 let character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * numJoints, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(numLegs, numJoints + 1)); //numjoints + 1 for foot
 let blue = false;
+let flower = false;
 let walk = false;
 let generated = false;
 let bound = false;
 let gen = false;
 let idxEven = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(3, 1);
 let idxOdd = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(3, 0);
-let obj0 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/penguin.obj');
+let obj0 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/body_1.obj');
 let obj1 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/limb.obj');
 let obj2 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/begin_joint.obj');
 let obj3 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/middle_joint.obj');
 let obj4 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/foot_joint.obj');
 let obj5 = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/body_1.obj');
 let blue_body = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/blue_body.obj');
-;
 let blue_ears = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/blue_ears.obj');
-;
 let blue_eyes = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/blue_eyes.obj');
-;
 let blue_mouth = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/blue_mouth.obj');
-;
+let flower_body = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/flower_body.obj');
+let flower_flowers = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/flower_flowers.obj');
+let flower_eyes = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/flower_eyes.obj');
+let flower_stem = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/flower_stem.obj');
+let flower_bulb = Object(__WEBPACK_IMPORTED_MODULE_5__globals__["b" /* readTextFile */])('./src/resources/flower_bulb.obj');
 function resetSystem() {
     generated = false;
     bound = false;
@@ -6158,21 +6163,43 @@ function resetSystem() {
     loadScene();
 }
 function updateCharacterLegs() {
-    character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+    if (blue) {
+        character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints - 0.75, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+    }
+    if (flower) {
+        character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+    }
+    numJoints = controls.Joints;
     resetSystem();
 }
 function updateCharacterJoints() {
-    character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+    if (blue) {
+        if (controls.Joints == 0) {
+            character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints + 1.0, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+        }
+        character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints - 0.75, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+    }
+    if (flower) {
+        if (controls.Joints == 0) {
+            character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints + 1.0, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+        }
+        character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * controls.Joints, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(controls.Legs, controls.Joints + 1));
+    }
+    numJoints = controls.Joints;
     resetSystem();
 }
 function loadBlue() {
     blue = true;
-    character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * 2, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(4, 3));
+    flower = false;
+    character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * 2 - 0.75, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(4, 3));
+    numJoints = 2.0;
     resetSystem();
 }
 function loadFlower() {
+    flower = true;
     blue = false;
-    character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * 1, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(1, 2));
+    character = new __WEBPACK_IMPORTED_MODULE_8__Character__["a" /* default */](__WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, -1.0 + 2.0 * 1, 0), __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["d" /* vec2 */].fromValues(2, 2));
+    numJoints = 1.0;
     resetSystem();
 }
 function generateWalkCycle() {
@@ -6194,7 +6221,7 @@ function loadAssets() {
     let scaleArray = [];
     let typeArray = [];
     offsetsArray.push(0);
-    offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.5);
+    offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.5 - 0.95);
     offsetsArray.push(0);
     r1Array.push(1);
     r1Array.push(0);
@@ -6239,6 +6266,67 @@ function loadAssets() {
     mouth.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
     mouth.setNumInstances(1); // grid of "particles"
 }
+function loadAssetsF() {
+    let offsetsArray = [];
+    let colorsArray = [];
+    let r1Array = [];
+    let r2Array = [];
+    let r3Array = [];
+    let scaleArray = [];
+    let typeArray = [];
+    offsetsArray.push(-0.5);
+    offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.0 - 1.5);
+    offsetsArray.push(0);
+    r1Array.push(1);
+    r1Array.push(0);
+    r1Array.push(0);
+    r2Array.push(0);
+    r2Array.push(1);
+    r2Array.push(0);
+    r3Array.push(0);
+    r3Array.push(0);
+    r3Array.push(1);
+    scaleArray.push(1.0);
+    scaleArray.push(1.0);
+    scaleArray.push(1.0);
+    colorsArray.push(0.0);
+    colorsArray.push(0.0);
+    colorsArray.push(1.0);
+    colorsArray.push(1.0);
+    typeArray.push(4.0);
+    typeArray.push(1.0);
+    typeArray.push(4.0);
+    let offsets = new Float32Array(offsetsArray);
+    let colors = new Float32Array(colorsArray);
+    let r1s = new Float32Array(r1Array);
+    let r2s = new Float32Array(r2Array);
+    let r3s = new Float32Array(r3Array);
+    let scales = new Float32Array(scaleArray);
+    let types = new Float32Array(typeArray);
+    eyes.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+    eyes.setNumInstances(1); // grid of "particles"
+    typeArray = [];
+    typeArray.push(5.0);
+    typeArray.push(1.0);
+    typeArray.push(5.0);
+    types = new Float32Array(typeArray);
+    flowers.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+    flowers.setNumInstances(1); // grid of "particles"
+    typeArray = [];
+    typeArray.push(6.0);
+    typeArray.push(1.0);
+    typeArray.push(6.0);
+    types = new Float32Array(typeArray);
+    stem.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+    stem.setNumInstances(1); // grid of "particles"
+    typeArray = [];
+    typeArray.push(7.0);
+    typeArray.push(1.0);
+    typeArray.push(7.0);
+    types = new Float32Array(typeArray);
+    bulb.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+    bulb.setNumInstances(1); // grid of "particles"
+}
 function loadScene() {
     plane.create();
     screenQuad.create();
@@ -6251,6 +6339,18 @@ function loadScene() {
         ears.create();
         mouth.create();
         loadAssets();
+    }
+    else if (flower) {
+        body = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](flower_body, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0.0, 0.0));
+        eyes = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](flower_eyes, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0.0, 0.0));
+        flowers = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](flower_flowers, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0.0, 0.0));
+        stem = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](flower_stem, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0.0, 0.0));
+        bulb = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](flower_bulb, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0, 0.0, 0.0));
+        eyes.create();
+        flowers.create();
+        stem.create();
+        bulb.create();
+        loadAssetsF();
     }
     else {
         body = new __WEBPACK_IMPORTED_MODULE_9__geometry_Mesh__["a" /* default */](obj5, __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(0.0, 0.0, 0.0));
@@ -6307,8 +6407,15 @@ function loadScene() {
         let type = data[5][i];
         if (type[0] == 0) {
             numBody++;
-            offsetsArrayBd.push(position[0]);
-            offsetsArrayBd.push(position[1] - 1.0);
+            if (flower) {
+                console.log("Flowers!!");
+                offsetsArrayBd.push(position[0] - 0.5);
+                offsetsArrayBd.push(position[1] - 1.0 - 1.5);
+            }
+            else {
+                offsetsArrayBd.push(position[0]);
+                offsetsArrayBd.push(position[1] - 1.0 - 0.75);
+            }
             offsetsArrayBd.push(position[2]);
             r1ArrayBd.push(r1[0]);
             r1ArrayBd.push(r1[1]);
@@ -6322,18 +6429,41 @@ function loadScene() {
             scaleArrayBd.push(scale[0]);
             scaleArrayBd.push(scale[1]);
             scaleArrayBd.push(scale[2]);
-            typeArrayBd.push(0.0);
-            typeArrayBd.push(0.0);
-            typeArrayBd.push(0.0);
-            colorsArrayBd.push(128.0 / 255.0); //128, 200, 252
-            colorsArrayBd.push(200.0 / 255.0);
-            colorsArrayBd.push(252.0 / 255.0);
-            colorsArrayBd.push(1.0); // Alpha channel
+            if (flower) {
+                typeArrayBd.push(0.0);
+                typeArrayBd.push(1.0);
+                typeArrayBd.push(0.0);
+            }
+            else {
+                typeArrayBd.push(0.0);
+                typeArrayBd.push(0.0);
+                typeArrayBd.push(0.0);
+            }
+            if (flower) {
+                colorsArrayBd.push(242.0 / 255.0); //128, 200, 252
+                colorsArrayBd.push(232.0 / 255.0);
+                colorsArrayBd.push(115.0 / 255.0);
+                colorsArrayBd.push(1.0); // Alpha channel
+            }
+            else {
+                colorsArrayBd.push(128.0 / 255.0); //128, 200, 252
+                colorsArrayBd.push(200.0 / 255.0);
+                colorsArrayBd.push(252.0 / 255.0);
+                colorsArrayBd.push(1.0); // Alpha channel
+            }
         }
         else if (type[0] == 1) {
             numBegin++;
-            offsetsArrayBg.push(position[0]);
-            offsetsArrayBg.push(position[1]);
+            if (flower) {
+                offsetsArrayBg.push(position[0]);
+                offsetsArrayBg.push(position[1] - 1.5);
+            }
+            else {
+                offsetsArrayBg.push(position[0]);
+                offsetsArrayBg.push(position[1] - 0.75);
+            }
+            // offsetsArrayBg.push(position[0]);
+            // offsetsArrayBg.push(position[1] - 0.75);
             offsetsArrayBg.push(position[2]);
             r1ArrayBg.push(r1[0]);
             r1ArrayBg.push(r1[1]);
@@ -6347,18 +6477,39 @@ function loadScene() {
             scaleArrayBg.push(scale[0]);
             scaleArrayBg.push(scale[1]);
             scaleArrayBg.push(scale[2]);
-            typeArrayBg.push(1.0);
-            typeArrayBg.push(1.0);
-            typeArrayBg.push(1.0);
-            colorsArrayBg.push(128.0 / 255.0);
-            colorsArrayBg.push(200.0 / 255.0);
-            colorsArrayBg.push(252.0 / 255.0);
-            colorsArrayBg.push(1.0); // Alpha channel
+            if (flower) {
+                typeArrayBg.push(1.0);
+                typeArrayBg.push(1.0);
+                typeArrayBg.push(0.0);
+            }
+            else {
+                typeArrayBg.push(1.0);
+                typeArrayBg.push(0.0);
+                typeArrayBg.push(0.0);
+            }
+            if (flower) {
+                colorsArrayBg.push(242.0 / 255.0); //128, 200, 252
+                colorsArrayBg.push(232.0 / 255.0);
+                colorsArrayBg.push(115.0 / 255.0);
+                colorsArrayBg.push(1.0); // Alpha channel
+            }
+            else {
+                colorsArrayBg.push(128.0 / 255.0); //128, 200, 252
+                colorsArrayBg.push(200.0 / 255.0);
+                colorsArrayBg.push(252.0 / 255.0);
+                colorsArrayBg.push(1.0); // Alpha channel
+            }
         }
         else if (type[0] == 2) {
             numMiddle++;
-            offsetsArrayM.push(position[0]);
-            offsetsArrayM.push(position[1]);
+            if (flower) {
+                offsetsArrayM.push(position[0]);
+                offsetsArrayM.push(position[1] - 1.5);
+            }
+            else {
+                offsetsArrayM.push(position[0]);
+                offsetsArrayM.push(position[1] - 0.75);
+            }
             offsetsArrayM.push(position[2]);
             r1ArrayM.push(r1[0]);
             r1ArrayM.push(r1[1]);
@@ -6372,18 +6523,41 @@ function loadScene() {
             scaleArrayM.push(scale[0]);
             scaleArrayM.push(scale[1]);
             scaleArrayM.push(scale[2]);
-            typeArrayM.push(2.0);
-            typeArrayM.push(2.0);
-            typeArrayM.push(2.0);
-            colorsArrayM.push(128.0 / 255.0);
-            colorsArrayM.push(200.0 / 255.0);
-            colorsArrayM.push(252.0 / 255.0);
-            colorsArrayM.push(1.0); // Alpha channel
+            if (flower) {
+                typeArrayM.push(2.0);
+                typeArrayM.push(1.0);
+                typeArrayM.push(0.0);
+            }
+            else {
+                typeArrayM.push(2.0);
+                typeArrayM.push(0.0);
+                typeArrayM.push(0.0);
+            }
+            if (flower) {
+                colorsArrayM.push(242.0 / 255.0); //128, 200, 252
+                colorsArrayM.push(232.0 / 255.0);
+                colorsArrayM.push(115.0 / 255.0);
+                colorsArrayM.push(1.0); // Alpha channel
+            }
+            else {
+                colorsArrayM.push(128.0 / 255.0); //128, 200, 252
+                colorsArrayM.push(200.0 / 255.0);
+                colorsArrayM.push(252.0 / 255.0);
+                colorsArrayM.push(1.0); // Alpha channel
+            }
         }
         else {
             numEnd++;
-            offsetsArrayE.push(position[0]);
-            offsetsArrayE.push(position[1]);
+            if (flower) {
+                offsetsArrayE.push(position[0]);
+                offsetsArrayE.push(position[1] - 0.75);
+            }
+            else {
+                offsetsArrayE.push(position[0]);
+                offsetsArrayE.push(position[1]);
+            }
+            // offsetsArrayE.push(position[0]);
+            // offsetsArrayE.push(position[1]);
             offsetsArrayE.push(position[2]);
             r1ArrayE.push(r1[0]);
             r1ArrayE.push(r1[1]);
@@ -6395,15 +6569,30 @@ function loadScene() {
             r3ArrayE.push(r3[1]);
             r3ArrayE.push(r3[2]);
             scaleArrayE.push(scale[0]);
-            scaleArrayE.push(scale[1]);
+            scaleArrayE.push(0.25);
             scaleArrayE.push(scale[2]);
-            typeArrayE.push(3.0);
-            typeArrayE.push(3.0);
-            typeArrayE.push(3.0);
-            colorsArrayE.push(128.0 / 255.0);
-            colorsArrayE.push(200.0 / 255.0);
-            colorsArrayE.push(252.0 / 255.0);
-            colorsArrayE.push(1.0); // Alpha channel
+            if (flower) {
+                typeArrayE.push(3.0);
+                typeArrayE.push(1.0);
+                typeArrayE.push(0.0);
+            }
+            else {
+                typeArrayE.push(3.0);
+                typeArrayE.push(0.0);
+                typeArrayE.push(0.0);
+            }
+            if (flower) {
+                colorsArrayE.push(242.0 / 255.0); //128, 200, 252
+                colorsArrayE.push(232.0 / 255.0);
+                colorsArrayE.push(115.0 / 255.0);
+                colorsArrayE.push(1.0); // Alpha channel
+            }
+            else {
+                colorsArrayE.push(128.0 / 255.0); //128, 200, 252
+                colorsArrayE.push(200.0 / 255.0);
+                colorsArrayE.push(252.0 / 255.0);
+                colorsArrayE.push(1.0); // Alpha channel
+            }
         }
         //console.log("Offset: " + position[0] + ", " + position[1] + ", " + position[2]);
     }
@@ -6445,73 +6634,6 @@ function loadScene() {
     endJoints.setNumInstances(numEnd); // grid of "particles"
     // prog.setLimb(arr);
     // prog.setnumJoints(character.totalNumJoints);
-}
-function getPosition(event) {
-    animate();
-    // walk = true;
-    // // var x = event.clientX + document.body.scrollLeft +
-    // //       document.documentElement.scrollLeft;
-    // // var y = event.clientY + document.body.scrollTop +
-    // //       document.documentElement.scrollTop;
-    // // var canvas = document.getElementById("canvas");
-    // // x -= canvas.offsetLeft;
-    // // y -= canvas.offsetTop;
-    // let r = Math.random();
-    // let tgt = vec3.create();
-    // if (!sw) {
-    //   tgt = vec3.fromValues(5.0, -5.0, 0.0);
-    //   character.moveToTarget(tgt, 0);
-    // } else {
-    //   tgt = vec3.fromValues(-3.0, -5.0, 0.0);
-    //   character.moveToTarget(tgt, 0);
-    // }
-    // sw = !sw;
-    // let offsetsArray = [];
-    // let colorsArray = [];
-    // let r1Array = [];
-    // let r2Array = [];
-    // let r3Array = [];
-    // let scaleArray = [];
-    // walkCycle = new Mesh(obj0, tgt);
-    // walkCycle.create();
-    // offsetsArray.push(tgt[0]);
-    // offsetsArray.push(tgt[1]);
-    // offsetsArray.push(tgt[2]);
-    // r1Array.push(1);
-    // r1Array.push(0);
-    // r1Array.push(0);
-    // r2Array.push(0);
-    // r2Array.push(1);
-    // r2Array.push(0);
-    // r3Array.push(0);
-    // r3Array.push(0);
-    // r3Array.push(1);
-    // scaleArray.push(0.2);
-    // scaleArray.push(0.2);
-    // scaleArray.push(0.2);
-    // colorsArray.push(1.0);
-    // colorsArray.push(0.0);
-    // colorsArray.push(0.0);
-    // colorsArray.push(1.0);
-    // let offsets: Float32Array = new Float32Array(offsetsArray);
-    // let colors: Float32Array = new Float32Array(colorsArray);
-    // let r1s: Float32Array = new Float32Array(r1Array);
-    // let r2s: Float32Array = new Float32Array(r2Array);
-    // let r3s: Float32Array = new Float32Array(r3Array);
-    // let scales: Float32Array = new Float32Array(scaleArray);
-    // walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
-    // walkCycle.setNumInstances(1); // grid of "particles"
-    // // if (r < 0.25) {
-    // //   character.moveToTarget(vec3.fromValues(4.0, 12.0, 0.0), 0);
-    // // } else if (r < 0.5) {
-    // //   character.moveToTarget(vec3.fromValues(4.0, 10.0, 0.0), 0);
-    // // } else if (r < 0.75) {
-    // //   character.moveToTarget(vec3.fromValues(-2.0, 14.0, 0.0), 0);
-    // // } else {
-    // //   character.moveToTarget(vec3.fromValues(-4.0, 12.0, 0.0), 0);
-    // // }
-    // //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
-    // loadScene();
 }
 function animate() {
     console.log("IDX: " + idxEven[0]);
@@ -6578,7 +6700,7 @@ function drawPoints() {
         let n = 0;
         for (let i = 0; i < character.limbs.length; ++i) {
             let cyArray = character.legWalkCycles[i];
-            for (let j = 0; j < cyArray.length; ++j) {
+            for (let j = 1; j < cyArray.length - 1; ++j) {
                 n++;
                 offsetsArray.push(cyArray[j][0]);
                 offsetsArray.push(cyArray[j][1]);
@@ -6592,9 +6714,9 @@ function drawPoints() {
                 r3Array.push(0);
                 r3Array.push(0);
                 r3Array.push(1);
-                scaleArray.push(0.2);
-                scaleArray.push(0.2);
-                scaleArray.push(0.2);
+                scaleArray.push(0.1);
+                scaleArray.push(0.1);
+                scaleArray.push(0.1);
                 typeArray.push(-1);
                 typeArray.push(-1);
                 typeArray.push(-1);
@@ -6676,6 +6798,7 @@ function main() {
     ]);
     // Initial call to load scene
     loadScene();
+    loadBlue();
     function processKeyPresses() {
         // Use this if you wish
     }
@@ -6722,6 +6845,12 @@ function main() {
                     eyes, ears, mouth
                 ]);
             }
+            else if (flower) {
+                renderer.render(camera, instancedShader, [
+                    body, beginJoints, middleJoints, endJoints,
+                    eyes, flowers, stem, bulb, walkCycle
+                ]);
+            }
             else {
                 renderer.render(camera, instancedShader, [
                     body, beginJoints, middleJoints, endJoints, walkCycle
@@ -6735,9 +6864,17 @@ function main() {
                     eyes, ears, mouth
                 ]);
             }
-            renderer.render(camera, instancedShader, [
-                body, beginJoints, middleJoints, endJoints
-            ]);
+            else if (flower) {
+                renderer.render(camera, instancedShader, [
+                    body, beginJoints, middleJoints, endJoints,
+                    eyes, flowers, stem, bulb
+                ]);
+            }
+            else {
+                renderer.render(camera, instancedShader, [
+                    body, beginJoints, middleJoints, endJoints
+                ]);
+            }
         }
         time++;
         stats.end();
@@ -17455,6 +17592,14 @@ class Limb {
             }
         }
         //don't orient endjoint because we make it a foot!
+        let foot = this.joints[this.joints.length - 1];
+        let parent = this.joints[this.joints.length - 2];
+        foot.orientation = __WEBPACK_IMPORTED_MODULE_0_gl_matrix__["e" /* vec3 */].fromValues(parent.orientation[0], parent.orientation[1], parent.orientation[2]);
+        let m = parent.rotation;
+        foot.rotation = m;
+        //  foot.rotation = mat3.fromValues(m00, m[0][1], m[0][2], 
+        //                                  m[1][0], m[1][1], m[1][2],
+        //                                  m[2][0], m[2][1], m[2][2]);
     }
 }
 ;
@@ -17659,19 +17804,19 @@ module.exports = "#version 300 es\n\nuniform mat4 u_ViewProj;\nuniform float u_T
 /* 77 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\nprecision highp float;\n\nin vec4 fs_Col;\nin vec4 fs_Pos;\nin vec4 fs_Nor;\nin vec3 fs_Type; //0 - Body, 1 - Begin, 2 - Middle, 3 - End, 4 - Eyes, 5 - Ears, 6 - Mouth\n\nout vec4 out_Col;\n\nvec3 diffuseLighting(vec4 diffuseColor) {\n        //vec4 lightVec = vec4(-11.0,-13.0,10.0,1.0);\n    //vec4 lightVec2 = vec4(11.0,13.0,-10.0,1.0);\n    //vec4 lightColor = vec4(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0, 1.0);\n    vec4 lightColor2 = vec4(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0, 1.0);\n\n    // Material base color (before shading)\n    //vec4 diffuseColor = fs_Col; //vec4(1.0, 0.0, 0.5, 1.0);//texture(u_Texture, fs_UV);\n\n    vec3 lightColor = vec3(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0);\n    vec3 darkColor = vec3(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0);\n\n    //diffuseColor = vec4(mix(lightColor, darkColor, pow(fs_Pos.y, 1.0)), 1.0);\n\n    vec4 fs_LightVec = vec4(15.0,6.0,-6.0,1.0);\n\n    vec4 fs_LightVec2 = vec4(-15.0,-6.0,6.0,1.0);\n\n    //vec4 lightColor2 = vec4(171.0 * 0.5 / 255.0, 156.0 * 0.5 / 255.0, 216.0 * 0.5/ 255.0, 1.0); \n\n    if (dot(normalize(fs_Nor), normalize(fs_LightVec)) < 0.3) {\n        float t = dot(normalize(fs_Nor), normalize(fs_LightVec));\n        lightColor2 = vec4(darkColor, 1.0); // mix(darkColor, darkColor * fs_Col.rgb, 1.0 - t / 0.1) 87, 57, 178\n    }\n\n    if (dot(normalize(fs_Nor), normalize(fs_LightVec)) < 0.0) {\n        lightColor2 = vec4(darkColor * fs_Col.rgb, 1.0); //87, 57, 178\n    }\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.2;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n\n    diffuseTerm += 0.9 * dot(normalize(fs_Nor), normalize(fs_LightVec2));\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    lightIntensity += diffuseTerm + ambientTerm;\n\n    return diffuseColor.rgb * lightIntensity * lightColor2.rgb;\n}\n\nvec3 blinnLighting(vec3 diffuseColor) {\n    vec4 fs_LightVec = vec4(-15.0,-6.0,6.0,1.0);\n\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));\n    // Avoid negative lighting values\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.2;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n\n    //compute specular intensity formula\n    vec4 H = (fs_LightVec + (vec4(vec3(0,0,1),1.f) - fs_Pos)) / 2.0;\n    float blinnTerm = max(pow(dot(normalize(H), normalize(fs_Nor)), 50.f), 0.f);\n    blinnTerm = clamp(blinnTerm,0.f,1.f);\n\n\n    return vec3((diffuseColor.rgb * lightIntensity) + blinnTerm);\n}\n\nvec2 random3( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\n//Worley Implementation from Book of Shaders: https://thebookofshaders.com/12/\nfloat worley (float c_size, float multiplier) {\n  float cell_size = c_size;\n  vec2 cell = (fs_Pos.xz + vec2(1.0, 5.0)) / cell_size;\n  float noise = 0.f;\n  \n  //get the cell pixel position is in\n  vec2 fract_pos = fract(cell);\n  vec2 int_pos = floor(cell);\n\n  float m_dist = 1.f;\n\n  //compare pos to the randpoints in the neighboring cells and save the smallest dist\n  for (int y= -1; y <= 1; y++) {\n    for (int x= -1; x <= 1; x++) {\n      // Neighbor place in the grid\n      vec2 neighbor = vec2(float(x),float(y));\n      vec2 randpt = random3(int_pos + neighbor);\n\n      vec2 diff = neighbor + randpt - fract_pos;\n      float dist = length(diff);\n      float rough = 1.0;\n      \n      // Keep the closer distance\n      if (dist < m_dist) {\n        m_dist = dist;\n        vec2 pt = (randpt + int_pos + neighbor) / cell_size;\n        noise = m_dist*multiplier;\n      }\n    } \n  }\n  return noise;\n}\n\nvoid main()\n{\n    vec3 shading = vec3(1.0, 0.0, 1.0);\n    if (fs_Type.x == 0.0) {\n        //float wor = worley(1.5, 3.0);\n        shading = diffuseLighting(fs_Col);\n        //shading *= wor;\n    } else if (fs_Type.x == 1.0) {\n        shading = diffuseLighting(fs_Col);\n    } else if (fs_Type.x == 2.0) {\n        shading = diffuseLighting(fs_Col);\n    } else if (fs_Type.x == 3.0) {\n        shading = diffuseLighting(fs_Col);\n    }  else if (fs_Type.x == 4.0) {\n        shading = blinnLighting(vec3(0.0));\n    } else if (fs_Type.x == 5.0) {\n        shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));\n    } else if (fs_Type.x == 6.0) {\n        shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));\n    }\n\n    out_Col = vec4(shading, 1.0);\n    \n}\n"
+module.exports = "#version 300 es\nprecision highp float;\n\nin vec4 fs_Col;\nin vec4 fs_Pos;\nin vec4 fs_Nor;\nin vec3 fs_Type; //0 - Body, 1 - Begin, 2 - Middle, 3 - End, 4 - Eyes, 5 - Ears, 6 - Mouth\n\nout vec4 out_Col;\n\nvec3 diffuseLighting(vec4 diffuseColor) {\n        //vec4 lightVec = vec4(-11.0,-13.0,10.0,1.0);\n    //vec4 lightVec2 = vec4(11.0,13.0,-10.0,1.0);\n    //vec4 lightColor = vec4(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0, 1.0);\n    vec4 lightColor2 = vec4(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0, 1.0);\n\n    // Material base color (before shading)\n    //vec4 diffuseColor = fs_Col; //vec4(1.0, 0.0, 0.5, 1.0);//texture(u_Texture, fs_UV);\n\n    vec3 lightColor = vec3(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0);\n    vec3 darkColor = vec3(0.7 * 244.0 / 255.0,0.7 * 217.0 / 255.0,0.7 * 254.0 / 255.0);\n\n    //diffuseColor = vec4(mix(lightColor, darkColor, pow(fs_Pos.y, 1.0)), 1.0);\n\n    vec4 fs_LightVec = vec4(15.0,6.0,-6.0,1.0);\n\n    vec4 fs_LightVec2 = vec4(-15.0,-6.0,6.0,1.0);\n\n    //vec4 lightColor2 = vec4(171.0 * 0.5 / 255.0, 156.0 * 0.5 / 255.0, 216.0 * 0.5/ 255.0, 1.0); \n\n    if (dot(normalize(fs_Nor), normalize(fs_LightVec)) < 0.3) {\n        float t = dot(normalize(fs_Nor), normalize(fs_LightVec));\n        lightColor2 = vec4(darkColor, 1.0); // mix(darkColor, darkColor * fs_Col.rgb, 1.0 - t / 0.1) 87, 57, 178\n    }\n\n    if (dot(normalize(fs_Nor), normalize(fs_LightVec)) < 0.0) {\n        lightColor2 = vec4(darkColor * fs_Col.rgb, 1.0); //87, 57, 178\n    }\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.2;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n\n    diffuseTerm += 0.9 * dot(normalize(fs_Nor), normalize(fs_LightVec2));\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    lightIntensity += diffuseTerm + ambientTerm;\n\n    return diffuseColor.rgb * lightIntensity * lightColor2.rgb;\n}\n\nvec3 blinnLighting(vec3 diffuseColor) {\n    vec4 fs_LightVec = vec4(-15.0,-6.0,6.0,1.0);\n\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(fs_Nor), normalize(fs_LightVec));\n    // Avoid negative lighting values\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.2;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n\n    //compute specular intensity formula\n    vec4 H = (fs_LightVec + (vec4(vec3(0,0,1),1.f) - fs_Pos)) / 2.0;\n    float blinnTerm = max(pow(dot(normalize(H), normalize(fs_Nor)), 50.f), 0.f);\n    blinnTerm = clamp(blinnTerm,0.f,1.f);\n\n\n    return vec3((diffuseColor.rgb * lightIntensity) + blinnTerm);\n}\n\nvec3 gradientLighting(vec4 diffuseColor) {\n    vec4 fs_LightVec = vec4(-15.0,-6.0,6.0,1.0);\n    float diffuseTerm = dot(normalize(fs_Nor.xzyw), normalize(fs_LightVec));\n    // Avoid negative lighting values\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.2;\n\n    float lightIntensity = diffuseTerm + ambientTerm;\n\n    return vec3(diffuseColor) + vec3(diffuseColor)\n            * cos(2.f*3.14159 * (vec3(2.f,1.2,1.2) * lightIntensity + vec3(0.f,0.2, 0.2)));\n}\n\nvec2 random3( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\n//Worley Implementation from Book of Shaders: https://thebookofshaders.com/12/\nfloat worley (float c_size, float multiplier, vec2 pos) {\n  float cell_size = c_size;\n  vec2 cell = (pos + vec2(1.0, 5.0)) / cell_size;\n  float noise = 0.f;\n  \n  //get the cell pixel position is in\n  vec2 fract_pos = fract(cell);\n  vec2 int_pos = floor(cell);\n\n  float m_dist = 1.f;\n\n  //compare pos to the randpoints in the neighboring cells and save the smallest dist\n  for (int y= -1; y <= 1; y++) {\n    for (int x= -1; x <= 1; x++) {\n      // Neighbor place in the grid\n      vec2 neighbor = vec2(float(x),float(y));\n      vec2 randpt = random3(int_pos + neighbor);\n\n      vec2 diff = neighbor + randpt - fract_pos;\n      float dist = length(diff);\n      float rough = 1.0;\n      \n      // Keep the closer distance\n      if (dist < m_dist) {\n        m_dist = dist;\n        vec2 pt = (randpt + int_pos + neighbor) / cell_size;\n        noise = m_dist*multiplier;\n      }\n    } \n  }\n  return noise;\n}\n\nfloat rand(vec2 co){\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}\n\nfloat interpNoise2D(float x, float y) {\n  float intX = floor(x);\n  float fractX = fract(x);\n  float intY = floor(y);\n  float fractY = fract(y);\n\n  float v1 = rand(vec2(intX, intY));\n  float v2 = rand(vec2(intX + 1.f, intY));\n  float v3 = rand(vec2(intX, intY + 1.f));\n  float v4 = rand(vec2(intX + 1.f, intY + 1.f));\n\n  float i1 = mix(v1, v2, fractX);\n  float i2 = mix(v3, v4, fractX);\n\n  return mix(i1, i2, fractY);\n}\n\nfloat fbm(float x, float y) {\n  float roughness = 1.f;\n  float total = 0.f;\n  float persistence = 0.5f;\n  int octaves = 8;\n\n  for (int i = 0; i < octaves; i++) {\n    float freq = pow(2.f, float(i));\n    float amp = pow(persistence, float(i));\n\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\n    roughness *= interpNoise2D(x*freq, y*freq);\n  }\n  return total;\n}\n\n\n\nvoid main()\n{\n    vec3 shading = vec3(244.0 / 255.0, 219.0 / 255.0, 252.0 / 255.0);\n    if (fs_Type.x == 0.0) {\n        if (fs_Type.y == 1.0) {\n            float wor = worley(1.5, 3.0, fs_Pos.xz);\n            shading = diffuseLighting(fs_Col);\n            shading += 0.15 * wor;\n        } else {\n            float f = fbm(fs_Pos.x * 1.2, fs_Pos.y * 1.2);\n            shading = diffuseLighting(fs_Col);\n            shading -= 0.2 * f;\n        }\n        \n    } else if (fs_Type.x == 1.0) {\n        if (fs_Type.y == 1.0) {\n            float wor = worley(1.5, 3.0, fs_Pos.xy);\n            shading = diffuseLighting(fs_Col);\n            shading += 0.15 * wor;\n        } else {\n        float f = fbm(fs_Pos.x * 1.2, fs_Pos.y * 1.2);\n        shading = diffuseLighting(fs_Col);\n        shading -= 0.2 * f;\n        }\n    } else if (fs_Type.x == 2.0) {\n        if (fs_Type.y == 1.0) {\n            float wor = worley(1.5, 3.0, fs_Pos.xy);\n            shading = diffuseLighting(fs_Col);\n            shading += 0.15 * wor;\n        } else {\n        float f = fbm(fs_Pos.x * 1.2, fs_Pos.y * 1.2);\n        shading = diffuseLighting(fs_Col);\n        shading -= 0.2 * f;\n        vec3 base = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));\n        shading = mix(shading, base, 0.2 * (1.0 - fs_Pos.y));\n        }\n    } else if (fs_Type.x == 3.0) {\n        if (fs_Type.y == 1.0) {\n            vec3 col = vec3(242.0 / 255.0, 232.0 / 255.0, 115.0 / 255.0);\n            //float f = fbm(fs_Pos.x * 1.1, fs_Pos.y * 1.1);\n            float wor = worley(1.5, 3.0, fs_Pos.xy);\n            shading = diffuseLighting(1.5 * vec4(126.0 / 255.0, 95.0 / 255.0, 81.0 / 255.0, 1.0));\n            shading *= 0.3 * wor;\n        } else {\n            float f = fbm(fs_Pos.x * 0.9, fs_Pos.y * 0.9);\n            shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));\n            shading -= 0.2 * f;\n        }\n    }  else if (fs_Type.x == 4.0) {\n        shading = blinnLighting(vec3(0.0));\n    } else if (fs_Type.x == 5.0) {\n        if (fs_Type.y == 1.0) {\n            //flower\n            vec3 col = vec3(242.0 / 255.0, 232.0 / 255.0, 115.0 / 255.0);\n            float f = fbm(fs_Pos.x * 1.1, fs_Pos.y * 1.1);\n            shading = diffuseLighting(1.5 * vec4(126.0 / 255.0, 95.0 / 255.0, 81.0 / 255.0, 1.0));\n            shading -= 0.2 * f;\n            shading = mix(col, shading, fs_Pos.x + 0.5);\n        } else {\n            shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));\n        }\n    } else if (fs_Type.x == 6.0) {\n        if (fs_Type.y == 1.0) {\n            //flower\n            shading = vec3(0.5) + 0.5 * diffuseLighting(vec4(100.0 / 255.0, 156.0 / 255.0, 117.0 / 255.0, 1.0));\n        } else {\n            shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));\n        }\n    } if (fs_Type.x == 7.0) {\n        //bulb\n        vec4 col = vec4(214.0 / 255.0, 162.0 / 255.0, 210.0 / 255.0, 1.0);\n        shading = vec3(col) + 0.2 * gradientLighting(col);\n    }\n\n    out_Col = vec4(shading, 1.0);\n    \n}\n"
 
 /***/ }),
 /* 78 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\nprecision highp float;\n\n// The vertex shader used to render the background of the scene\n\nin vec4 vs_Pos;\nin vec3 vs_Scale;\nuniform vec2 u_PlanePos;\nuniform mat4 u_ViewProj;\nuniform vec4 u_MapState;\nuniform sampler2D u_Texture;\nout vec2 fs_Pos;\nout float fs_Height;\n\nfloat rand(vec2 co){\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}\n\nfloat interpNoise2D(float x, float y) {\n  float intX = floor(x);\n  float fractX = fract(x);\n  float intY = floor(y);\n  float fractY = fract(y);\n\n  float v1 = rand(vec2(intX, intY));\n  float v2 = rand(vec2(intX + 1.0, intY));\n  float v3 = rand(vec2(intX, intY + 1.0));\n  float v4 = rand(vec2(intX + 1.0, intY + 1.0));\n\n  float i1 = mix(v1, v2, fractX);\n  float i2 = mix(v3, v4, fractX);\n\n  return mix(i1, i2, fractY);\n}\n\nfloat fbm(float x, float y) {\n  float roughness = 1.0;\n  float total = 0.0;\n  float persistence = 0.7;\n  int octaves = 2;\n\n  for (int i = 0; i < 8; i++) {\n    float freq = pow(2.0, float(i));\n    float amp = pow(persistence, float(i));\n\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\n    roughness *= interpNoise2D(x*freq, y*freq);\n  }\n  return total;\n}\n\nfloat step_map(float value) {\n\nif (value < 0.2f) {\n    return 0.2f;\n  } else if (value < 0.4f) {\n    return 0.2f + ((value - 0.2f) / 0.2f)*0.2f;\n  } else if (value < 0.6f) {\n    return 0.4f + ((value - 0.4f) / 0.2f)*0.2f;\n  } else if (value < 0.8f) {\n    return 0.6f + ((value - 0.6f) / 0.2f)*0.2f;\n  } else {\n    return 1.f;\n  }\n  \n}\n\nvec2 random3( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\nfloat worley (float c_size, float multiplier, vec2 pos) {\n  float cell_size = c_size;\n  vec2 cell = pos.xy / cell_size;\n  float noise = 0.f;\n  \n  //get the cell pixel position is in\n  vec2 fract_pos = fract(cell);\n  vec2 int_pos = floor(cell);\n\n  float m_dist = 1.f;\n\n  //compare pos to the randpoints in the neighboring cells and save the smallest dist\n  for (int y= -1; y <= 1; y++) {\n    for (int x= -1; x <= 1; x++) {\n      // Neighbor place in the grid\n      vec2 neighbor = vec2(float(x),float(y));\n      vec2 randpt = random3(int_pos + neighbor);\n\n      vec2 diff = neighbor + randpt - fract_pos;\n      float dist = length(diff);\n      float rough = 1.0;\n      \n      // Keep the closer distance\n      if (dist < m_dist) {\n        m_dist = dist;\n        vec2 pt = (randpt + int_pos + neighbor) / cell_size;\n        noise = m_dist*multiplier;\n      }\n    } \n  }\n  return noise;\n}\n\nvoid main() {\n  fs_Pos = vs_Pos.xz;\n\n  vec2 pos = fs_Pos * 5.0;\n  float height = worley(2., 1.25, pos); //vec2(fbm(pos.x, pos.y), fbm(pos.x, pos.y))\n  height = log(height + 0.7);\n\n  float offset = 0.f;\n  if (height < 0.2) {\n    offset = 0.f;\n  } else if (height < 0.3) {\n    offset = mix(0.1, 0.0, (0.3 - height) / 0.3);\n  } else {\n    offset = 0.1;\n  }\n\n    offset = height;\n\n    fs_Height = height;\n\n  vec2 uv = vec2(0.5 * (fs_Pos.x + 4.0) / 4.0, 0.5 * (fs_Pos.y + 4.0) / 4.0);\n  vec4 diffuseColor = vec4(0.0, 1.0, 0.0, 1.0);//texture(u_Texture, uv);\n  vec4 modelposition = vs_Pos;\n   modelposition = modelposition + vec4(0.0,offset,0.0,0.0); \n    gl_Position = u_ViewProj * vec4(vec3(modelposition), 1.0);\n}"
+module.exports = "#version 300 es\nprecision highp float;\n\n// The vertex shader used to render the background of the scene\n\nin vec4 vs_Pos;\nin vec3 vs_Scale;\nuniform vec2 u_PlanePos;\nuniform mat4 u_ViewProj;\nuniform vec4 u_MapState;\nuniform sampler2D u_Texture;\nout vec2 fs_Pos;\nout float fs_Height;\n\nfloat rand(vec2 co){\n    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);\n}\n\nfloat interpNoise2D(float x, float y) {\n  float intX = floor(x);\n  float fractX = fract(x);\n  float intY = floor(y);\n  float fractY = fract(y);\n\n  float v1 = rand(vec2(intX, intY));\n  float v2 = rand(vec2(intX + 1.0, intY));\n  float v3 = rand(vec2(intX, intY + 1.0));\n  float v4 = rand(vec2(intX + 1.0, intY + 1.0));\n\n  float i1 = mix(v1, v2, fractX);\n  float i2 = mix(v3, v4, fractX);\n\n  return mix(i1, i2, fractY);\n}\n\nfloat fbm(float x, float y) {\n  float roughness = 1.0;\n  float total = 0.0;\n  float persistence = 0.7;\n  int octaves = 2;\n\n  for (int i = 0; i < 8; i++) {\n    float freq = pow(2.0, float(i));\n    float amp = pow(persistence, float(i));\n\n    total += interpNoise2D(x * freq, y * freq) * amp * roughness;\n    roughness *= interpNoise2D(x*freq, y*freq);\n  }\n  return total;\n}\n\nfloat step_map(float value) {\n\nif (value < 0.2f) {\n    return 0.2f;\n  } else if (value < 0.4f) {\n    return 0.2f + ((value - 0.2f) / 0.2f)*0.2f;\n  } else if (value < 0.6f) {\n    return 0.4f + ((value - 0.4f) / 0.2f)*0.2f;\n  } else if (value < 0.8f) {\n    return 0.6f + ((value - 0.6f) / 0.2f)*0.2f;\n  } else {\n    return 1.f;\n  }\n  \n}\n\nvec2 random3( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\nfloat worley (float c_size, float multiplier, vec2 pos) {\n  float cell_size = c_size;\n  vec2 cell = pos.xy / cell_size;\n  float noise = 0.f;\n  \n  //get the cell pixel position is in\n  vec2 fract_pos = fract(cell);\n  vec2 int_pos = floor(cell);\n\n  float m_dist = 1.f;\n\n  //compare pos to the randpoints in the neighboring cells and save the smallest dist\n  for (int y= -1; y <= 1; y++) {\n    for (int x= -1; x <= 1; x++) {\n      // Neighbor place in the grid\n      vec2 neighbor = vec2(float(x),float(y));\n      vec2 randpt = random3(int_pos + neighbor);\n\n      vec2 diff = neighbor + randpt - fract_pos;\n      float dist = length(diff);\n      float rough = 1.0;\n      \n      // Keep the closer distance\n      if (dist < m_dist) {\n        m_dist = dist;\n        vec2 pt = (randpt + int_pos + neighbor) / cell_size;\n        noise = m_dist*multiplier;\n      }\n    } \n  }\n  return noise;\n}\n\nvoid main() {\n  fs_Pos = vs_Pos.xz;\n\n  vec2 pos = fs_Pos * 5.0;\n  float height = worley(2., 1.25, pos); //vec2(fbm(pos.x, pos.y), fbm(pos.x, pos.y))\n  height = log(height + 0.7);\n\n  float offset = 0.f;\n  if (height < 0.2) {\n    offset = 0.f;\n  } else if (height < 0.3) {\n    offset = mix(0.1, 0.0, (0.3 - height) / 0.3);\n  } else {\n    offset = 0.1;\n  }\n\n    offset = height;\n\n    fs_Height = height;\n\n  vec2 uv = vec2(0.5 * (fs_Pos.x + 4.0) / 4.0, 0.5 * (fs_Pos.y + 4.0) / 4.0);\n  vec4 diffuseColor = vec4(0.0, 1.0, 0.0, 1.0);//texture(u_Texture, uv);\n  vec4 modelposition = vs_Pos;\n   modelposition = modelposition + vec4(0.0,offset + 0.25,0.0,0.0); \n    gl_Position = u_ViewProj * vec4(vec3(modelposition), 1.0);\n}"
 
 /***/ }),
 /* 79 */
 /***/ (function(module, exports) {
 
-module.exports = "#version 300 es\nprecision highp float;\n\nuniform vec3 u_Eye, u_Ref, u_Up;\nuniform vec2 u_Dimensions;\nuniform float u_Time;\nuniform sampler2D u_Texture; // The texture to be read from by this shader\nuniform vec4 u_MapState;\n\nin vec2 fs_Pos;\nin float fs_Height;\nout vec4 out_Col;\n\nvoid main() {\n    //let's add some sweet distance fog\n    float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog\n    vec3 fog_color = vec3(244.0 / 255.0,217.0 / 255.0,254.0 / 255.0); //vec3(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0);\n\n    vec4 lightVec = vec4(-11.0,-13.0,0.0,1.0);\n\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(vec4(0,0,1,1)), normalize(lightVec));\n    // Avoid negative lighting values\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.9;\n\n    float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier\n                                                        //to simulate ambient lighting. This ensures that faces that are not\n                                                        //lit by our point light are not completely black.\n\n    // Compute final shaded color\n    vec4 dirt = vec4(127.0 / 255.0, 102.0 / 255.0, 75.0 / 255.0, 1.0);\n    vec4 grass = vec4(113.0 / 255.0, 110.0 / 255.0, 62.0 / 255.0, 1.0);\n    //vec4(mix(vec3(244.0 / 255.0, 66.0 / 255.0, 146.0 / 255.0) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);\n    if (fs_Height < 0.3) {\n        out_Col = mix(grass, vec4(fog_color, 1.0), t) * lightIntensity;\n    } else { \n        out_Col = mix(dirt, vec4(fog_color, 1.0), t) * lightIntensity;\n    }\n    //out_Col = vec4(vec3(fs_Height), 1.0) * lightIntensity;\n}"
+module.exports = "#version 300 es\nprecision highp float;\n\nuniform vec3 u_Eye, u_Ref, u_Up;\nuniform vec2 u_Dimensions;\nuniform float u_Time;\nuniform sampler2D u_Texture; // The texture to be read from by this shader\nuniform vec4 u_MapState;\n\nin vec2 fs_Pos;\nin float fs_Height;\nout vec4 out_Col;\n\nvec2 random3( vec2 p ) {\n    return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);\n}\n\n//implementation from IQ: http://www.iquilezles.org/www/articles/voronoilines/voronoilines.htm\nvec2 voronoi() {\n    vec2 p = floor( fs_Pos.xy );\n    vec2  f = fract( fs_Pos.xy );\n\n    vec2 res = vec2( 8.0 );\n    //search nearby cells\n    for( int j=-1; j<=1; j++ )\n    for( int i=-1; i<=1; i++ )\n    {\n        vec2 b = vec2( i, j );\n        //compare points in nearby cells and get distance\n        vec2  r = vec2( b ) - f + random3( p + b );\n        float d = dot( r, r );\n\n        //update nearest x and y dist\n        if( d < res.x )\n        {\n            res.y = res.x;\n            res.x = d;\n        }\n        else if( d < res.y )\n        {\n            res.y = d;\n        }\n    }\n    //return min_dist!\n    return sqrt(res);\n}\n\nvoid main() {\n    //let's add some sweet distance fog\n    float t = clamp(smoothstep(40.0, 50.0, length(fs_Pos)), 0.0, 1.0); // Distance fog\n    vec3 fog_color = vec3(244.0 / 255.0, 217.0 / 255.0,254.0 / 255.0); //vec3(255.0 / 255.0,212.0 / 255.0,166.0 / 255.0);\n\n    vec4 lightVec = vec4(-11.0,-13.0,0.0,1.0);\n\n    // Calculate the diffuse term for Lambert shading\n    float diffuseTerm = dot(normalize(vec4(0,0,1,1)), normalize(lightVec));\n    // Avoid negative lighting values\n    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);\n\n    float ambientTerm = 0.9;\n\n    float lightIntensity = diffuseTerm + ambientTerm;   //Add a small float value to the color multiplier\n                                                        //to simulate ambient lighting. This ensures that faces that are not\n                                                        //lit by our point light are not completely black.\n\n    // Compute final shaded color\n    vec4 dirt = vec4(127.0 / 255.0, 102.0 / 255.0, 75.0 / 255.0, 1.0);\n    vec4 grass = vec4(113.0 / 255.0, 110.0 / 255.0, 62.0 / 255.0, 1.0);\n    //vec4(mix(vec3(244.0 / 255.0, 66.0 / 255.0, 146.0 / 255.0) * 0.5 * (fs_Sine*0.15) + 0.1, fog_color, t), 1.0);\n    if (fs_Height < 0.2) {\n        out_Col = mix(grass + 0.2 * vec4(voronoi(), vec2(voronoi().x, 1.0)), vec4(fog_color, 1.0), t) * lightIntensity;\n    } else { \n        out_Col = mix(dirt + 0.2 * vec4(voronoi(), vec2(voronoi().x, 1.0)), vec4(fog_color, 1.0), t) * lightIntensity;\n    }\n    //out_Col = vec4(vec3(voronoi(), 0.0), 1.0) * lightIntensity;\n}"
 
 /***/ })
 /******/ ]);

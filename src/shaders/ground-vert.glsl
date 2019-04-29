@@ -125,6 +125,6 @@ void main() {
   vec2 uv = vec2(0.5 * (fs_Pos.x + 4.0) / 4.0, 0.5 * (fs_Pos.y + 4.0) / 4.0);
   vec4 diffuseColor = vec4(0.0, 1.0, 0.0, 1.0);//texture(u_Texture, uv);
   vec4 modelposition = vs_Pos;
-   modelposition = modelposition + vec4(0.0,offset,0.0,0.0); 
+   modelposition = modelposition + vec4(0.0,offset + 0.25,0.0,0.0); 
     gl_Position = u_ViewProj * vec4(vec3(modelposition), 1.0);
 }

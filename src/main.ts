@@ -41,6 +41,9 @@ let endJoints: Mesh;
 let eyes : Mesh;
 let ears : Mesh;
 let mouth : Mesh;
+let flowers : Mesh;
+let stem : Mesh;
+let bulb : Mesh;
 
 let walkCycle: Mesh;
 let prog : ShaderProgram;
@@ -48,6 +51,7 @@ let renderer : OpenGLRenderer;
 let time: number = 0;
 let character : Character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * numJoints,0), vec2.fromValues(numLegs,numJoints + 1)); //numjoints + 1 for foot
 let blue : boolean = false;
+let flower : boolean = false;
 let walk : boolean = false;
 let generated : boolean = false;
 let bound : boolean = false;
@@ -56,16 +60,21 @@ let idxEven : vec2 = vec2.fromValues(3, 1);
 let idxOdd : vec2 = vec2.fromValues(3, 0);
 
 
-let obj0: string = readTextFile('./src/resources/penguin.obj');
+let obj0: string = readTextFile('./src/resources/body_1.obj');
 let obj1: string = readTextFile('./src/resources/limb.obj');
 let obj2: string = readTextFile('./src/resources/begin_joint.obj');
 let obj3: string = readTextFile('./src/resources/middle_joint.obj');
 let obj4: string = readTextFile('./src/resources/foot_joint.obj');
 let obj5: string = readTextFile('./src/resources/body_1.obj');
-let blue_body  : string= readTextFile('./src/resources/blue_body.obj');;
-let blue_ears  : string= readTextFile('./src/resources/blue_ears.obj');;
-let blue_eyes  : string= readTextFile('./src/resources/blue_eyes.obj');;
-let blue_mouth : string = readTextFile('./src/resources/blue_mouth.obj');;
+let blue_body  : string= readTextFile('./src/resources/blue_body.obj');
+let blue_ears  : string= readTextFile('./src/resources/blue_ears.obj');
+let blue_eyes  : string= readTextFile('./src/resources/blue_eyes.obj');
+let blue_mouth : string = readTextFile('./src/resources/blue_mouth.obj');
+let flower_body  : string= readTextFile('./src/resources/flower_body.obj');
+let flower_flowers  : string= readTextFile('./src/resources/flower_flowers.obj');
+let flower_eyes  : string= readTextFile('./src/resources/flower_eyes.obj');
+let flower_stem : string = readTextFile('./src/resources/flower_stem.obj');
+let flower_bulb : string = readTextFile('./src/resources/flower_bulb.obj');
 
 function resetSystem() {
   generated = false;
@@ -77,24 +86,46 @@ function resetSystem() {
 }
 
 function updateCharacterLegs() {
-  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  if (blue) {
+    character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints - 0.75,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  }
+  if (flower) {
+    character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  }
+  numJoints = controls.Joints;
   resetSystem();
 }
 
 function updateCharacterJoints() {
-  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  if (blue) {
+    if (controls.Joints == 0) {
+      character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints + 1.0,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+    }
+    character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints - 0.75,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  }
+  if (flower) {
+    if (controls.Joints == 0) {
+      character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints + 1.0,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+    }
+    character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * controls.Joints,0), vec2.fromValues(controls.Legs,controls.Joints + 1));
+  }
+  numJoints = controls.Joints;
   resetSystem();
 }
 
 function loadBlue() {
   blue = true;
-  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * 2,0), vec2.fromValues(4,3));
+  flower = false;
+  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * 2 - 0.75,0), vec2.fromValues(4,3));
+  numJoints = 2.0;
   resetSystem();
 }
 
 function loadFlower() {
+  flower = true;
   blue = false;
-  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * 1,0), vec2.fromValues(1,2));
+  character = new Character(vec3.fromValues(0.0,-1.0 + 2.0 * 1,0), vec2.fromValues(2,2));
+  numJoints = 1.0;
   resetSystem();
 }
 
@@ -120,7 +151,7 @@ function loadAssets() {
   let typeArray = [];
 
   offsetsArray.push(0);
-  offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.5);
+  offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.5 - 0.95);
   offsetsArray.push(0);
 
   r1Array.push(1);
@@ -176,6 +207,82 @@ function loadAssets() {
   mouth.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
   mouth.setNumInstances(1); // grid of "particles"
 }
+
+function loadAssetsF() {
+  let offsetsArray = [];
+  let colorsArray = [];
+  let r1Array = [];
+  let r2Array = [];
+  let r3Array = [];
+  let scaleArray = [];
+  let typeArray = [];
+
+  offsetsArray.push(-0.5);
+  offsetsArray.push((-1.0 + 2.0 * numJoints) - 1.0 - 1.5);
+  offsetsArray.push(0);
+
+  r1Array.push(1);
+  r1Array.push(0);
+  r1Array.push(0);
+        
+  r2Array.push(0);
+  r2Array.push(1);
+  r2Array.push(0);
+        
+  r3Array.push(0);
+  r3Array.push(0);
+  r3Array.push(1);
+        
+  scaleArray.push(1.0);
+  scaleArray.push(1.0);
+  scaleArray.push(1.0);
+
+  colorsArray.push(0.0);
+  colorsArray.push(0.0);
+  colorsArray.push(1.0);
+  colorsArray.push(1.0);
+
+  typeArray.push(4.0);
+  typeArray.push(1.0);
+  typeArray.push(4.0);
+
+  let offsets: Float32Array = new Float32Array(offsetsArray);
+  let colors: Float32Array = new Float32Array(colorsArray);
+  let r1s: Float32Array = new Float32Array(r1Array);
+  let r2s: Float32Array = new Float32Array(r2Array);
+  let r3s: Float32Array = new Float32Array(r3Array);
+  let scales: Float32Array = new Float32Array(scaleArray);
+  let types: Float32Array = new Float32Array(typeArray);
+  eyes.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  eyes.setNumInstances(1); // grid of "particles"
+
+  typeArray = [];
+  typeArray.push(5.0);
+  typeArray.push(1.0);
+  typeArray.push(5.0);
+  types = new Float32Array(typeArray);
+
+  flowers.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  flowers.setNumInstances(1); // grid of "particles"
+
+  typeArray = [];
+  typeArray.push(6.0);
+  typeArray.push(1.0);
+  typeArray.push(6.0);
+  types = new Float32Array(typeArray);
+
+  stem.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  stem.setNumInstances(1); // grid of "particles"
+
+  typeArray = [];
+  typeArray.push(7.0);
+  typeArray.push(1.0);
+  typeArray.push(7.0);
+  types = new Float32Array(typeArray);
+
+  bulb.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales, types);
+  bulb.setNumInstances(1); // grid of "particles"
+}
 function loadScene() {
   plane.create();
   screenQuad.create();
@@ -188,6 +295,17 @@ function loadScene() {
     ears.create();
     mouth.create();
     loadAssets();
+  } else if (flower) {
+    body = new Mesh(flower_body,vec3.fromValues(0,0.0,0.0));
+    eyes = new Mesh(flower_eyes,vec3.fromValues(0,0.0,0.0));
+    flowers = new Mesh(flower_flowers,vec3.fromValues(0,0.0,0.0));
+    stem = new Mesh(flower_stem,vec3.fromValues(0,0.0,0.0));
+    bulb = new Mesh(flower_bulb,vec3.fromValues(0,0.0,0.0));
+    eyes.create();
+    flowers.create();
+    stem.create();
+    bulb.create();
+    loadAssetsF();
   } else {
     body = new Mesh(obj5,vec3.fromValues(0.0,0.0,0.0));
   }
@@ -255,9 +373,14 @@ function loadScene() {
 
       if (type[0] == 0) {
         numBody++;
-
-        offsetsArrayBd.push(position[0]);
-        offsetsArrayBd.push(position[1] - 1.0);
+        if (flower) {
+          console.log("Flowers!!");
+          offsetsArrayBd.push(position[0] - 0.5);
+          offsetsArrayBd.push(position[1] - 1.0 - 1.5);
+        } else {
+          offsetsArrayBd.push(position[0]);
+          offsetsArrayBd.push(position[1] - 1.0 - 0.75);
+        }
         offsetsArrayBd.push(position[2]);
 
         r1ArrayBd.push(r1[0]);
@@ -276,19 +399,39 @@ function loadScene() {
         scaleArrayBd.push(scale[1]);
         scaleArrayBd.push(scale[2]);
         
-        typeArrayBd.push(0.0);
-        typeArrayBd.push(0.0);
-        typeArrayBd.push(0.0);
-
-        colorsArrayBd.push(128.0 / 255.0); //128, 200, 252
-        colorsArrayBd.push(200.0 / 255.0);
-        colorsArrayBd.push(252.0 / 255.0);
-        colorsArrayBd.push(1.0); // Alpha channel
+        if (flower) {
+          typeArrayBd.push(0.0);
+          typeArrayBd.push(1.0);
+          typeArrayBd.push(0.0);
+        } else {
+          typeArrayBd.push(0.0);
+          typeArrayBd.push(0.0);
+          typeArrayBd.push(0.0);
+        }
+        
+        if (flower) {
+          colorsArrayBd.push(242.0 / 255.0); //128, 200, 252
+          colorsArrayBd.push(232.0 / 255.0);
+          colorsArrayBd.push(115.0 / 255.0);
+          colorsArrayBd.push(1.0); // Alpha channel
+        } else {
+          colorsArrayBd.push(128.0 / 255.0); //128, 200, 252
+          colorsArrayBd.push(200.0 / 255.0);
+          colorsArrayBd.push(252.0 / 255.0);
+          colorsArrayBd.push(1.0); // Alpha channel
+        }
       } else if (type[0] == 1) {
         numBegin++;
 
-        offsetsArrayBg.push(position[0]);
-        offsetsArrayBg.push(position[1]);
+        if (flower) {
+          offsetsArrayBg.push(position[0]);
+          offsetsArrayBg.push(position[1] - 1.5);
+        } else {
+          offsetsArrayBg.push(position[0]);
+          offsetsArrayBg.push(position[1] - 0.75);
+        }
+        // offsetsArrayBg.push(position[0]);
+        // offsetsArrayBg.push(position[1] - 0.75);
         offsetsArrayBg.push(position[2]);
         
         r1ArrayBg.push(r1[0]);
@@ -307,20 +450,38 @@ function loadScene() {
         scaleArrayBg.push(scale[1]);
         scaleArrayBg.push(scale[2]);
 
-        typeArrayBg.push(1.0);
-        typeArrayBg.push(1.0);
-        typeArrayBg.push(1.0);
+        if (flower) {
+          typeArrayBg.push(1.0);
+          typeArrayBg.push(1.0);
+          typeArrayBg.push(0.0);
+        } else {
+          typeArrayBg.push(1.0);
+          typeArrayBg.push(0.0);
+          typeArrayBg.push(0.0);
+        }
         
-        colorsArrayBg.push(128.0 / 255.0);
-        colorsArrayBg.push(200.0 / 255.0);
-        colorsArrayBg.push(252.0 / 255.0);
-        colorsArrayBg.push(1.0); // Alpha channel
+        if (flower) {
+          colorsArrayBg.push(242.0 / 255.0); //128, 200, 252
+          colorsArrayBg.push(232.0 / 255.0);
+          colorsArrayBg.push(115.0 / 255.0);
+          colorsArrayBg.push(1.0); // Alpha channel
+        } else {
+          colorsArrayBg.push(128.0 / 255.0); //128, 200, 252
+          colorsArrayBg.push(200.0 / 255.0);
+          colorsArrayBg.push(252.0 / 255.0);
+          colorsArrayBg.push(1.0); // Alpha channel
+        }
 
       } else if (type[0] == 2) {
         numMiddle++;
 
-        offsetsArrayM.push(position[0]);
-        offsetsArrayM.push(position[1]);
+        if (flower) {
+          offsetsArrayM.push(position[0]);
+          offsetsArrayM.push(position[1] - 1.5);
+        } else {
+          offsetsArrayM.push(position[0]);
+          offsetsArrayM.push(position[1] - 0.75);
+        }
         offsetsArrayM.push(position[2]);
         
         r1ArrayM.push(r1[0]);
@@ -339,19 +500,40 @@ function loadScene() {
         scaleArrayM.push(scale[1]);
         scaleArrayM.push(scale[2]);
 
-        typeArrayM.push(2.0);
-        typeArrayM.push(2.0);
-        typeArrayM.push(2.0);
+        if (flower) {
+          typeArrayM.push(2.0);
+          typeArrayM.push(1.0);
+          typeArrayM.push(0.0);
+        } else {
+          typeArrayM.push(2.0);
+          typeArrayM.push(0.0);
+          typeArrayM.push(0.0);
+        }
         
-        colorsArrayM.push(128.0 / 255.0);
-        colorsArrayM.push(200.0 / 255.0);
-        colorsArrayM.push(252.0 / 255.0);
-        colorsArrayM.push(1.0); // Alpha channel
+        if (flower) {
+          colorsArrayM.push(242.0 / 255.0); //128, 200, 252
+          colorsArrayM.push(232.0 / 255.0);
+          colorsArrayM.push(115.0 / 255.0);
+          colorsArrayM.push(1.0); // Alpha channel
+        } else {
+          colorsArrayM.push(128.0 / 255.0); //128, 200, 252
+          colorsArrayM.push(200.0 / 255.0);
+          colorsArrayM.push(252.0 / 255.0);
+          colorsArrayM.push(1.0); // Alpha channel
+        }
       } else {
         numEnd++;
 
-        offsetsArrayE.push(position[0]);
-        offsetsArrayE.push(position[1]);
+        if (flower) {
+          offsetsArrayE.push(position[0]);
+          offsetsArrayE.push(position[1] -  0.75);
+        } else {
+          offsetsArrayE.push(position[0]);
+          offsetsArrayE.push(position[1]);
+        }
+
+        // offsetsArrayE.push(position[0]);
+        // offsetsArrayE.push(position[1]);
         offsetsArrayE.push(position[2]);
         
         r1ArrayE.push(r1[0]);
@@ -367,17 +549,30 @@ function loadScene() {
         r3ArrayE.push(r3[2]);
         
         scaleArrayE.push(scale[0]);
-        scaleArrayE.push(scale[1]);
+        scaleArrayE.push(0.25);
         scaleArrayE.push(scale[2]);
 
-        typeArrayE.push(3.0);
-        typeArrayE.push(3.0);
-        typeArrayE.push(3.0);
+        if (flower) {
+          typeArrayE.push(3.0);
+          typeArrayE.push(1.0);
+          typeArrayE.push(0.0);
+        } else {
+          typeArrayE.push(3.0);
+          typeArrayE.push(0.0);
+          typeArrayE.push(0.0);
+        }
         
-        colorsArrayE.push(128.0 / 255.0);
-        colorsArrayE.push(200.0 / 255.0);
-        colorsArrayE.push(252.0 / 255.0);
-        colorsArrayE.push(1.0); // Alpha channel
+        if (flower) {
+          colorsArrayE.push(242.0 / 255.0); //128, 200, 252
+          colorsArrayE.push(232.0 / 255.0);
+          colorsArrayE.push(115.0 / 255.0);
+          colorsArrayE.push(1.0); // Alpha channel
+        } else {
+          colorsArrayE.push(128.0 / 255.0); //128, 200, 252
+          colorsArrayE.push(200.0 / 255.0);
+          colorsArrayE.push(252.0 / 255.0);
+          colorsArrayE.push(1.0); // Alpha channel
+        }
       }
 
       //console.log("Offset: " + position[0] + ", " + position[1] + ", " + position[2]);
@@ -427,90 +622,6 @@ function loadScene() {
   // prog.setLimb(arr);
   // prog.setnumJoints(character.totalNumJoints);
 }
-
-function getPosition(event : MouseEvent)
-      {
-        animate();
-        // walk = true;
-        // // var x = event.clientX + document.body.scrollLeft +
-        // //       document.documentElement.scrollLeft;
-        // // var y = event.clientY + document.body.scrollTop +
-        // //       document.documentElement.scrollTop;
-
-        // // var canvas = document.getElementById("canvas");
-
-        // // x -= canvas.offsetLeft;
-        // // y -= canvas.offsetTop;
-        // let r = Math.random();
-
-        // let tgt = vec3.create();
-        // if (!sw) {
-        //   tgt = vec3.fromValues(5.0, -5.0, 0.0);
-        //   character.moveToTarget(tgt, 0);
-        // } else {
-        //   tgt = vec3.fromValues(-3.0, -5.0, 0.0);
-        //   character.moveToTarget(tgt, 0);
-        // }
-        // sw = !sw;
-
-        // let offsetsArray = [];
-        // let colorsArray = [];
-        // let r1Array = [];
-        // let r2Array = [];
-        // let r3Array = [];
-        // let scaleArray = [];
-
-        // walkCycle = new Mesh(obj0, tgt);
-        // walkCycle.create();
-
-        // offsetsArray.push(tgt[0]);
-        // offsetsArray.push(tgt[1]);
-        // offsetsArray.push(tgt[2]);
-
-        // r1Array.push(1);
-        // r1Array.push(0);
-        // r1Array.push(0);
-        
-        // r2Array.push(0);
-        // r2Array.push(1);
-        // r2Array.push(0);
-        
-        // r3Array.push(0);
-        // r3Array.push(0);
-        // r3Array.push(1);
-        
-        // scaleArray.push(0.2);
-        // scaleArray.push(0.2);
-        // scaleArray.push(0.2);
-
-        // colorsArray.push(1.0);
-        // colorsArray.push(0.0);
-        // colorsArray.push(0.0);
-        // colorsArray.push(1.0);
-
-        // let offsets: Float32Array = new Float32Array(offsetsArray);
-        // let colors: Float32Array = new Float32Array(colorsArray);
-        // let r1s: Float32Array = new Float32Array(r1Array);
-        // let r2s: Float32Array = new Float32Array(r2Array);
-        // let r3s: Float32Array = new Float32Array(r3Array);
-        // let scales: Float32Array = new Float32Array(scaleArray);
-        // walkCycle.setInstanceVBOs(offsets, colors, r1s, r2s, r3s, scales);
-        // walkCycle.setNumInstances(1); // grid of "particles"
-        
-        
-        // // if (r < 0.25) {
-        // //   character.moveToTarget(vec3.fromValues(4.0, 12.0, 0.0), 0);
-        // // } else if (r < 0.5) {
-        // //   character.moveToTarget(vec3.fromValues(4.0, 10.0, 0.0), 0);
-        // // } else if (r < 0.75) {
-        // //   character.moveToTarget(vec3.fromValues(-2.0, 14.0, 0.0), 0);
-        // // } else {
-        // //   character.moveToTarget(vec3.fromValues(-4.0, 12.0, 0.0), 0);
-        // // }
-        
-        // //console.log("x: " + ((x / canvas.clientWidth) * 32 - 16)+ "  y: " + ((y / canvas.clientHeight)* 32 -16) );
-        // loadScene();
-      }
 
 function animate() {
   console.log("IDX: " + idxEven[0]);
@@ -582,7 +693,7 @@ function drawPoints() {
 
     for (let i = 0; i < character.limbs.length; ++i) {
       let cyArray = character.legWalkCycles[i];
-      for (let j = 0; j < cyArray.length; ++j) {
+      for (let j = 1; j < cyArray.length - 1; ++j) {
         n++;
         offsetsArray.push(cyArray[j][0]);
         offsetsArray.push(cyArray[j][1]);
@@ -600,9 +711,9 @@ function drawPoints() {
         r3Array.push(0);
         r3Array.push(1);
 
-        scaleArray.push(0.2);
-        scaleArray.push(0.2);
-        scaleArray.push(0.2);
+        scaleArray.push(0.1);
+        scaleArray.push(0.1);
+        scaleArray.push(0.1);
 
         typeArray.push(-1);
         typeArray.push(-1);
@@ -701,6 +812,7 @@ function main() {
 
     // Initial call to load scene
     loadScene();
+    loadBlue();
 
 
   function processKeyPresses() {
@@ -750,6 +862,11 @@ function main() {
           body, beginJoints, middleJoints, endJoints, walkCycle,
           eyes, ears, mouth
         ]);
+      } else if (flower) {
+        renderer.render(camera, instancedShader, [
+          body, beginJoints, middleJoints, endJoints,
+          eyes, flowers, stem, bulb, walkCycle
+        ]);
       } else {
       renderer.render(camera, instancedShader, [
         body, beginJoints, middleJoints, endJoints, walkCycle
@@ -762,10 +879,16 @@ function main() {
           body, beginJoints, middleJoints, endJoints,
           eyes, ears, mouth
         ]);
+      } else if (flower) {
+        renderer.render(camera, instancedShader, [
+          body, beginJoints, middleJoints, endJoints,
+          eyes, flowers, stem, bulb
+        ]);
+      } else {
+        renderer.render(camera, instancedShader, [
+          body, beginJoints, middleJoints, endJoints
+        ]);
       }
-      renderer.render(camera, instancedShader, [
-        body, beginJoints, middleJoints, endJoints
-      ]);
     }
     
     time++;

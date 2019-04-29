@@ -88,6 +88,14 @@ class Limb {
             }
          }
          //don't orient endjoint because we make it a foot!
+         let foot : Leg = this.joints[this.joints.length - 1];
+         let parent = this.joints[this.joints.length - 2];
+         foot.orientation = vec3.fromValues(parent.orientation[0], parent.orientation[1], parent.orientation[2]);
+         let m : mat3 = parent.rotation;
+         foot.rotation = m;
+        //  foot.rotation = mat3.fromValues(m00, m[0][1], m[0][2], 
+        //                                  m[1][0], m[1][1], m[1][2],
+        //                                  m[2][0], m[2][1], m[2][2]);
     }
 
 };

@@ -73,14 +73,28 @@ vec3 blinnLighting(vec3 diffuseColor) {
     return vec3((diffuseColor.rgb * lightIntensity) + blinnTerm);
 }
 
+vec3 gradientLighting(vec4 diffuseColor) {
+    vec4 fs_LightVec = vec4(-15.0,-6.0,6.0,1.0);
+    float diffuseTerm = dot(normalize(fs_Nor.xzyw), normalize(fs_LightVec));
+    // Avoid negative lighting values
+    diffuseTerm = clamp(diffuseTerm, 0.0, 1.0);
+
+    float ambientTerm = 0.2;
+
+    float lightIntensity = diffuseTerm + ambientTerm;
+
+    return vec3(diffuseColor) + vec3(diffuseColor)
+            * cos(2.f*3.14159 * (vec3(2.f,1.2,1.2) * lightIntensity + vec3(0.f,0.2, 0.2)));
+}
+
 vec2 random3( vec2 p ) {
     return fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453);
 }
 
 //Worley Implementation from Book of Shaders: https://thebookofshaders.com/12/
-float worley (float c_size, float multiplier) {
+float worley (float c_size, float multiplier, vec2 pos) {
   float cell_size = c_size;
-  vec2 cell = (fs_Pos.xz + vec2(1.0, 5.0)) / cell_size;
+  vec2 cell = (pos + vec2(1.0, 5.0)) / cell_size;
   float noise = 0.f;
   
   //get the cell pixel position is in
@@ -111,25 +125,117 @@ float worley (float c_size, float multiplier) {
   return noise;
 }
 
+float rand(vec2 co){
+    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+}
+
+float interpNoise2D(float x, float y) {
+  float intX = floor(x);
+  float fractX = fract(x);
+  float intY = floor(y);
+  float fractY = fract(y);
+
+  float v1 = rand(vec2(intX, intY));
+  float v2 = rand(vec2(intX + 1.f, intY));
+  float v3 = rand(vec2(intX, intY + 1.f));
+  float v4 = rand(vec2(intX + 1.f, intY + 1.f));
+
+  float i1 = mix(v1, v2, fractX);
+  float i2 = mix(v3, v4, fractX);
+
+  return mix(i1, i2, fractY);
+}
+
+float fbm(float x, float y) {
+  float roughness = 1.f;
+  float total = 0.f;
+  float persistence = 0.5f;
+  int octaves = 8;
+
+  for (int i = 0; i < octaves; i++) {
+    float freq = pow(2.f, float(i));
+    float amp = pow(persistence, float(i));
+
+    total += interpNoise2D(x * freq, y * freq) * amp * roughness;
+    roughness *= interpNoise2D(x*freq, y*freq);
+  }
+  return total;
+}
+
+
+
 void main()
 {
-    vec3 shading = vec3(1.0, 0.0, 1.0);
+    vec3 shading = vec3(244.0 / 255.0, 219.0 / 255.0, 252.0 / 255.0);
     if (fs_Type.x == 0.0) {
-        //float wor = worley(1.5, 3.0);
-        shading = diffuseLighting(fs_Col);
-        //shading *= wor;
+        if (fs_Type.y == 1.0) {
+            float wor = worley(1.5, 3.0, fs_Pos.xz);
+            shading = diffuseLighting(fs_Col);
+            shading += 0.15 * wor;
+        } else {
+            float f = fbm(fs_Pos.x * 1.2, fs_Pos.y * 1.2);
+            shading = diffuseLighting(fs_Col);
+            shading -= 0.2 * f;
+        }
+        
     } else if (fs_Type.x == 1.0) {
+        if (fs_Type.y == 1.0) {
+            float wor = worley(1.5, 3.0, fs_Pos.xy);
+            shading = diffuseLighting(fs_Col);
+            shading += 0.15 * wor;
+        } else {
+        float f = fbm(fs_Pos.x * 1.2, fs_Pos.y * 1.2);
         shading = diffuseLighting(fs_Col);
+        shading -= 0.2 * f;
+        }
     } else if (fs_Type.x == 2.0) {
+        if (fs_Type.y == 1.0) {
+            float wor = worley(1.5, 3.0, fs_Pos.xy);
+            shading = diffuseLighting(fs_Col);
+            shading += 0.15 * wor;
+        } else {
+        float f = fbm(fs_Pos.x * 1.2, fs_Pos.y * 1.2);
         shading = diffuseLighting(fs_Col);
+        shading -= 0.2 * f;
+        vec3 base = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));
+        shading = mix(shading, base, 0.2 * (1.0 - fs_Pos.y));
+        }
     } else if (fs_Type.x == 3.0) {
-        shading = diffuseLighting(fs_Col);
+        if (fs_Type.y == 1.0) {
+            vec3 col = vec3(242.0 / 255.0, 232.0 / 255.0, 115.0 / 255.0);
+            //float f = fbm(fs_Pos.x * 1.1, fs_Pos.y * 1.1);
+            float wor = worley(1.5, 3.0, fs_Pos.xy);
+            shading = diffuseLighting(1.5 * vec4(126.0 / 255.0, 95.0 / 255.0, 81.0 / 255.0, 1.0));
+            shading *= 0.3 * wor;
+        } else {
+            float f = fbm(fs_Pos.x * 0.9, fs_Pos.y * 0.9);
+            shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));
+            shading -= 0.2 * f;
+        }
     }  else if (fs_Type.x == 4.0) {
         shading = blinnLighting(vec3(0.0));
     } else if (fs_Type.x == 5.0) {
-        shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));
+        if (fs_Type.y == 1.0) {
+            //flower
+            vec3 col = vec3(242.0 / 255.0, 232.0 / 255.0, 115.0 / 255.0);
+            float f = fbm(fs_Pos.x * 1.1, fs_Pos.y * 1.1);
+            shading = diffuseLighting(1.5 * vec4(126.0 / 255.0, 95.0 / 255.0, 81.0 / 255.0, 1.0));
+            shading -= 0.2 * f;
+            shading = mix(col, shading, fs_Pos.x + 0.5);
+        } else {
+            shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));
+        }
     } else if (fs_Type.x == 6.0) {
-        shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));
+        if (fs_Type.y == 1.0) {
+            //flower
+            shading = vec3(0.5) + 0.5 * diffuseLighting(vec4(100.0 / 255.0, 156.0 / 255.0, 117.0 / 255.0, 1.0));
+        } else {
+            shading = diffuseLighting(vec4(254.0 / 255.0, 252.0 / 255.0, 240.0 / 255.0, 1.0));
+        }
+    } if (fs_Type.x == 7.0) {
+        //bulb
+        vec4 col = vec4(214.0 / 255.0, 162.0 / 255.0, 210.0 / 255.0, 1.0);
+        shading = vec3(col) + 0.2 * gradientLighting(col);
     }
 
     out_Col = vec4(shading, 1.0);
