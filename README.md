@@ -1,5 +1,4 @@
-# final_project
-CIS 566 Final Project
+# CIS 566 Final Project
 
 Evelyn Bailey
 
