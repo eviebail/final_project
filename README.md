@@ -9,6 +9,16 @@ Project: https://eviebail.github.io/final_project/
 
 Website: https://evelyn.pb.studio
 
+![](renders/title1.png)
+<p align="center">
+  Blue
+</p>
+
+![](renders/title2.png)
+<p align="center">
+  Flower
+</p>
+
 Features
 
 System Architecture:
@@ -47,12 +57,22 @@ For this project, I organized the architecture of the creature into three classe
            this joint. It then updates the position of all child joints by computing the position + y scale * new orientation for 
            each joint lower in the chain. This is repeated for each joint in the chain. Finally, the end joint's orientation is 
            set to its parent's orientation to properly orient the foot.
+           
+![](renders/ik.png)
+<p align="center">
+  While testing the InverseKinematics for a joint chain, I rendered simple cones to ensure the rotation is correct. The penguin represents the target position to which the leg must rotate to. Each joint orients itself to the target positon and updates the position of all its joint children. CCD starts from the closest joint to the end joint and iterates to the root joint.
+</p>
   
   Rendering:
 
     Rendering Joint Structure: Main renders the character by loading obj assets for the body, beginning joint, middle joint, end joint (foot), and any accessories for the characters and populating the information for vs_Offset (vector to offset the instance object to the position of the joint or body part), vs_Color, vs_Scale, vs_Type (used in the fragment shader to determine how to shade the object), and three vectors representing the rows of the rotation matrix of the joint.
   
     Instanced Rendering: For the creatures, main uses an instancedShader where a mesh or object is created once and drawn multiple times. This is accomplished by keeping track of the number of instances to be drawn and setting up instanced variables like vs_Translate and vs_Scale (described above) that have a separate value for each instance of the object.
+    
+![](renders/rendering.png)
+<p align="center">
+      Initial rendering of the creature based on the information stored in creature without any shading.
+</p>
   
     Shading: This project uses three shaders - one for the sky, one for the ground plane, and one for the creature.
          
@@ -69,4 +89,12 @@ For this project, I organized the architecture of the creature into three classe
          joints lerp between a base color and the color of the foot joint.
   
 
+![](renders/shading.png)
+<p align="center">
+  Finished, shaded version of the creature Blue
+</p>
 
+![](renders/shading2.png)
+<p align="center">
+  Finished, shaded version of the creature Flower
+</p>
